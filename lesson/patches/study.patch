@@ -1,0 +1,13 @@
+diff --git a/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java b/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java
+--- a/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java
++++ b/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java
+@@ -38,7 +38,8 @@ public final class StudentBot {
+         }
+ 
+         if (message.buttonPressed("scenario:study")) {
+-            chooseScenario(user, Scenario.STUDY);
++            // TODO STUDENT: проверь аргумент через breakpoint.
++            chooseScenario(user, Scenario.SPORT);
+             return;
+         }
+         if (message.buttonPressed("scenario:sport")) {

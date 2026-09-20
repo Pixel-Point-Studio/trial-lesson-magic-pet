@@ -6,7 +6,7 @@
 - [x] Walkthrough 4 — AI-план и гарантированный fallback
 - [x] Walkthrough 5 — управление задачами
 - [x] Walkthrough 6 — устойчивость и эксплуатационная безопасность
-- [ ] Walkthrough 7 — учебная поверхность
+- [x] Walkthrough 7 — учебная поверхность
 - [ ] Walkthrough 8 — подготовка нового занятия
 - [ ] Walkthrough 9 — финальная приёмка и пилот
 

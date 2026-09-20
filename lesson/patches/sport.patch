@@ -1,0 +1,12 @@
+diff --git a/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java b/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java
+--- a/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java
++++ b/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java
+@@ -42,6 +42,7 @@ public final class StudentBot {
+             return;
+         }
+-        if (message.buttonPressed("scenario:sport")) {
++        // TODO STUDENT: сравни callback ID с условием.
++        if (message.buttonPressed("scenario:sports")) {
+             chooseScenario(user, Scenario.SPORT);
+             return;
+         }

@@ -1,0 +1,12 @@
+diff --git a/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java b/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java
+--- a/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java
++++ b/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java
+@@ -102,6 +102,7 @@ public final class StudentBot {
+         Long deletedTaskId = callbackId(message.buttonId(), "task:delete:");
+         if (deletedTaskId != null) {
+-            if (journeyReady(user)) pet.deleteTask(user, deletedTaskId);
++            // TODO STUDENT: выбери метод с правильным эффектом.
++            if (journeyReady(user)) pet.completeTask(user, deletedTaskId, message.deliveryId());
+             else pet.repeatPrompt(user);
+             return;
+         }

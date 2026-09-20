@@ -1,4 +1,4 @@
-# Magic Pet — walkthrough 1–6
+# Magic Pet — walkthrough 1–7
 
 Рабочий Telegram-бот для пробного урока Pixel Point Studio. Пользователь выбирает один из трёх путей, называет питомца, формулирует цель, получает персональный или резервный план из трёх задач и развивает питомца выполнением заданий.
 
@@ -8,6 +8,15 @@
 - Telegram-бот и токен от [@BotFather](https://t.me/BotFather).
 
 Gradle отдельно устанавливать не нужно: wrapper включён в репозиторий.
+
+## С чего начать ученику
+
+1. Прочитать выбранную карточку в [`lesson/issues`](lesson/issues).
+2. Работать в основном с [`StudentBot.java`](src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java).
+3. Для творческого изменения открыть [`ui-texts.ru.json`](src/main/resources/content/ui-texts.ru.json).
+4. Не изменять каталоги `infrastructure`, `db/migration`, `.env` и бинарные ассеты без указания МОПа.
+
+Карта трёх маршрутов, команды проверки и порядок применения учебного дефекта находятся в [`lesson/README.md`](lesson/README.md). На одном уроке применяется только один patch.
 
 ## Запуск
 
@@ -34,11 +43,12 @@ Gradle отдельно устанавливать не нужно: wrapper вк
 
 ```bash
 ./gradlew test
+./scripts/verify-lesson-patches.sh
 ```
 
 Сквозной тест проходит путь от `/start` до 100 XP и уровня 2. Отдельные тесты проверяют SQLite, все сочетания ассетов, AI-контракт, timeout/fallback и защиту от повторной доставки callback.
 
-## Что входит в walkthrough 1–6
+## Что входит в walkthrough 1–7
 
 - Java 21 и Gradle 9.2.1;
 - TelegramBots 10.3.0, long polling;
@@ -57,6 +67,8 @@ Gradle отдельно устанавливать не нужно: wrapper вк
 - изоляция ошибок отдельных Telegram update и ограниченный retry подключения;
 - восстановление после временной блокировки SQLite и понятная ошибка повреждённой базы;
 - безопасный `/reset`, выключенный по умолчанию и доступный только в режиме урока;
+- три независимых учебных issue-маршрута с одним контролируемым дефектом каждый;
+- проверяемые patch-файлы, breakpoint-сценарии, лестница подсказок и отдельные ответы МОПа;
 - независимые порты `TelegramGateway`, `UserStore`, `PlanGenerator`, `AssetCatalog`;
 - три локальных плана без сетевого AI;
 - 50 XP за задачу; уровень 2 открывается на 100 XP, уровень 3 — на 250 XP;
