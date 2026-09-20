@@ -1,6 +1,6 @@
 # Статус реализации
 
-- [ ] Walkthrough 1 — сквозной работающий бот
+- [x] Walkthrough 1 — сквозной работающий бот
 - [ ] Walkthrough 2 — SQLite и сохранение состояния
 - [ ] Walkthrough 3 — полноценные ассеты питомцев
 - [ ] Walkthrough 4 — AI-план и гарантированный fallback

@@ -1,0 +1,26 @@
+{
+  "buttons": {
+    "scenarioStudy": "📚 Учёба",
+    "scenarioSport": "🔥 Спорт",
+    "scenarioBlog": "🦊 Личный блог",
+    "taskDone": "✅ Выполнено"
+  },
+  "messages": {
+    "sendStart": "Отправь /start, чтобы разбудить своего Magic Pet.",
+    "chooseScenario": "Выбери путь для своего Magic Pet:",
+    "askPetName": "Как назовём твоего Magic Pet? Напиши имя сообщением.",
+    "askGoal": "Какой цели ты хочешь достичь? Сформулируй её одним сообщением.",
+    "fallbackPlanUsed": "Архив Magic Pet подготовил проверенный маршрут ✨",
+    "invalidName": "Имя должно содержать от 1 до 32 символов. Попробуй ещё раз.",
+    "invalidGoal": "Опиши цель короче: от 1 до 500 символов.",
+    "alreadyCompleted": "Эта задача уже выполнена — дополнительный XP не начислен.",
+    "planCompleted": "Маршрут завершён! Твой Magic Pet гордится тобой. Отправь /start, чтобы начать заново."
+  },
+  "templates": {
+    "planReady": "Твой маршрут готов: {summary}",
+    "task": "Задание {number}: {title}\n\n{description}",
+    "progress": "{petName} получает {xpAdded} XP. Всего: {totalXp} XP.",
+    "levelUp": "🌟 {petName} достиг уровня {level}! Новая форма пробуждена!",
+    "petText": "🐾 {petName} · уровень {level} · {xp} XP"
+  }
+}
