@@ -20,6 +20,32 @@ public final class UserSession {
         this.displayName = displayName == null ? "" : displayName;
     }
 
+    public static UserSession restore(
+            long userId,
+            String displayName,
+            UserState state,
+            Scenario scenario,
+            String petName,
+            String goal,
+            List<PlanTask> tasks,
+            int experience
+    ) {
+        UserSession session = new UserSession(userId, displayName);
+        session.state = state;
+        session.scenario = scenario;
+        session.petName = petName;
+        session.goal = goal;
+        session.planSummary = goal;
+        session.tasks = new ArrayList<>(tasks);
+        session.currentTaskIndex = 0;
+        while (session.currentTaskIndex < session.tasks.size()
+                && session.tasks.get(session.currentTaskIndex).completed()) {
+            session.currentTaskIndex++;
+        }
+        session.experience = experience;
+        return session;
+    }
+
     public long userId() { return userId; }
     public String displayName() { return displayName; }
     public UserState state() { return state; }

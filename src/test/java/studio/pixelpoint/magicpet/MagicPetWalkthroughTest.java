@@ -1,25 +1,30 @@
 package studio.pixelpoint.magicpet;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import studio.pixelpoint.magicpet.application.IncomingMessage;
 import studio.pixelpoint.magicpet.application.PetFacade;
 import studio.pixelpoint.magicpet.application.UiTexts;
 import studio.pixelpoint.magicpet.application.port.AssetCatalog;
 import studio.pixelpoint.magicpet.domain.UserSession;
 import studio.pixelpoint.magicpet.domain.UserState;
-import studio.pixelpoint.magicpet.infrastructure.memory.InMemoryUserStore;
 import studio.pixelpoint.magicpet.infrastructure.plan.FallbackPlanGenerator;
+import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteDatabase;
+import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteUserStore;
 import studio.pixelpoint.magicpet.lesson.StudentBot;
 
 import java.util.Optional;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class MagicPetWalkthroughTest {
+    @TempDir Path tempDir;
+
     @Test
     void fakeUserCompletesTwoTasksAndReachesLevelTwoExactlyOnce() {
         FakeTelegramGateway telegram = new FakeTelegramGateway();
-        InMemoryUserStore users = new InMemoryUserStore();
+        SqliteUserStore users = new SqliteUserStore(SqliteDatabase.migrate(tempDir.resolve("walkthrough.db")));
         AssetCatalog noAssets = (scenario, level) -> Optional.empty();
         PetFacade facade = new PetFacade(telegram, users, new FallbackPlanGenerator(), noAssets, UiTexts.load());
         StudentBot bot = new StudentBot(facade);
@@ -36,11 +41,13 @@ class MagicPetWalkthroughTest {
         assertEquals(3, session.tasks().size());
 
         bot.receiveMessage(button(userId, "action:task_done", "done-1"));
-        assertEquals(50, session.experience());
+        assertEquals(50, users.getOrCreate(userId, "Аня").experience());
         bot.receiveMessage(button(userId, "action:task_done", "done-1"));
-        assertEquals(50, session.experience(), "повторная доставка callback не должна начислять XP");
+        assertEquals(50, users.getOrCreate(userId, "Аня").experience(),
+                "повторная доставка callback не должна начислять XP");
         bot.receiveMessage(button(userId, "action:task_done", "done-2"));
 
+        session = users.getOrCreate(userId, "Аня");
         assertEquals(100, session.experience());
         assertEquals(2, session.level());
         assertEquals(2, session.currentTaskIndex());

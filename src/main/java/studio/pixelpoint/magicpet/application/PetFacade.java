@@ -71,24 +71,24 @@ public final class PetFacade {
         return true;
     }
 
-    public void completeCurrentTask(UserSession user) {
-        ProgressResult result = user.completeCurrentTask();
-        users.save(user);
+    public void completeCurrentTask(UserSession user, String deliveryId) {
+        ProgressResult result = users.completeCurrentTask(user.userId(), deliveryId);
+        UserSession refreshed = users.getOrCreate(user.userId(), user.displayName());
         if (!result.taskCompleted()) {
-            telegram.sendText(user.userId(), texts.message("alreadyCompleted"));
+            telegram.sendText(refreshed.userId(), texts.message("alreadyCompleted"));
             return;
         }
-        telegram.sendText(user.userId(), texts.template("progress", Map.of(
-                "petName", user.petName(), "xpAdded", result.xpAdded(), "totalXp", result.totalXp())));
+        telegram.sendText(refreshed.userId(), texts.template("progress", Map.of(
+                "petName", refreshed.petName(), "xpAdded", result.xpAdded(), "totalXp", result.totalXp())));
         if (result.levelUp()) {
-            telegram.sendText(user.userId(), texts.template("levelUp", Map.of(
-                    "petName", user.petName(), "level", result.level())));
-            showPet(user);
+            telegram.sendText(refreshed.userId(), texts.template("levelUp", Map.of(
+                    "petName", refreshed.petName(), "level", result.level())));
+            showPet(refreshed);
         }
         if (result.planCompleted()) {
-            telegram.sendText(user.userId(), texts.message("planCompleted"));
+            telegram.sendText(refreshed.userId(), texts.message("planCompleted"));
         } else {
-            showCurrentTask(user);
+            showCurrentTask(refreshed);
         }
     }
 

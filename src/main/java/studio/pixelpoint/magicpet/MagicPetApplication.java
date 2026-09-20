@@ -7,8 +7,9 @@ import studio.pixelpoint.magicpet.application.PromptResource;
 import studio.pixelpoint.magicpet.application.UiTexts;
 import studio.pixelpoint.magicpet.infrastructure.assets.FileAssetCatalog;
 import studio.pixelpoint.magicpet.infrastructure.config.AppConfig;
-import studio.pixelpoint.magicpet.infrastructure.memory.InMemoryUserStore;
 import studio.pixelpoint.magicpet.infrastructure.plan.FallbackPlanGenerator;
+import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteDatabase;
+import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteUserStore;
 import studio.pixelpoint.magicpet.infrastructure.telegram.TelegramBotAdapter;
 import studio.pixelpoint.magicpet.infrastructure.telegram.TelegramBotGateway;
 import studio.pixelpoint.magicpet.lesson.StudentBot;
@@ -26,7 +27,8 @@ public final class MagicPetApplication {
 
             var telegramClient = new OkHttpTelegramClient(config.telegramBotToken());
             var gateway = new TelegramBotGateway(telegramClient);
-            var facade = new PetFacade(gateway, new InMemoryUserStore(), new FallbackPlanGenerator(),
+            String jdbcUrl = SqliteDatabase.migrate(config.databasePath());
+            var facade = new PetFacade(gateway, new SqliteUserStore(jdbcUrl), new FallbackPlanGenerator(),
                     new FileAssetCatalog(config.assetDirectory()), texts);
             var bot = new TelegramBotAdapter(new StudentBot(facade));
 

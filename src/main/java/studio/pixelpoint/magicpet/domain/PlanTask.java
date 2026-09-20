@@ -10,8 +10,13 @@ public final class PlanTask {
     private boolean completed;
 
     public PlanTask(String title, String description) {
+        this(title, description, false);
+    }
+
+    public PlanTask(String title, String description, boolean completed) {
         this.title = Objects.requireNonNull(title);
         this.description = Objects.requireNonNull(description);
+        this.completed = completed;
     }
 
     public String title() { return title; }

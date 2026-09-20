@@ -28,3 +28,7 @@ replay_pid*
 .env
 .gradle/
 build/
+data/
+*.db
+*.db-shm
+*.db-wal

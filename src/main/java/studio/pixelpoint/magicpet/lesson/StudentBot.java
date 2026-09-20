@@ -6,13 +6,9 @@ import studio.pixelpoint.magicpet.domain.Scenario;
 import studio.pixelpoint.magicpet.domain.UserSession;
 import studio.pixelpoint.magicpet.domain.UserState;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 /** Простая учебная поверхность: ввод, условия и вызовы методов уровня продукта. */
 public final class StudentBot {
     private final PetFacade pet;
-    private final Set<String> handledDeliveries = ConcurrentHashMap.newKeySet();
 
     public StudentBot(PetFacade pet) {
         this.pet = pet;
@@ -40,8 +36,8 @@ public final class StudentBot {
         }
 
         if (message.buttonPressed("action:task_done")) {
-            if (user.state() == UserState.ACTIVE && firstDelivery(message)) {
-                pet.completeCurrentTask(user);
+            if (user.state() == UserState.ACTIVE) {
+                pet.completeCurrentTask(user, message.deliveryId());
             }
             return;
         }
@@ -64,10 +60,5 @@ public final class StudentBot {
         } else {
             pet.repeatPrompt(user);
         }
-    }
-
-    private boolean firstDelivery(IncomingMessage message) {
-        return message.deliveryId() == null
-                || handledDeliveries.add(message.userId() + ":" + message.deliveryId());
     }
 }

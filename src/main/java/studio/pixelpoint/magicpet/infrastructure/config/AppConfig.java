@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public record AppConfig(String telegramBotToken, Path assetDirectory) {
+public record AppConfig(String telegramBotToken, Path assetDirectory, Path databasePath) {
     public static AppConfig load(Path workingDirectory) {
         Map<String, String> values = new HashMap<>();
         Path envFile = workingDirectory.resolve(".env");
@@ -25,7 +25,8 @@ public record AppConfig(String telegramBotToken, Path assetDirectory) {
                     "Не задан TELEGRAM_BOT_TOKEN. Скопируйте .env.example в .env и вставьте токен от @BotFather.");
         }
         Path assets = workingDirectory.resolve(values.getOrDefault("ASSET_DIRECTORY", "./assets")).normalize();
-        return new AppConfig(token, assets);
+        Path database = workingDirectory.resolve(values.getOrDefault("DATABASE_PATH", "./data/magic-pet.db")).normalize();
+        return new AppConfig(token, assets, database);
     }
 
     private static void parse(List<String> lines, Map<String, String> target) {
