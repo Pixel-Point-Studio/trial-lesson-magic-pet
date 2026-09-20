@@ -15,6 +15,8 @@ import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteDatabase;
 import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteUserStore;
 import studio.pixelpoint.magicpet.infrastructure.telegram.TelegramBotAdapter;
 import studio.pixelpoint.magicpet.infrastructure.telegram.TelegramBotGateway;
+import studio.pixelpoint.magicpet.infrastructure.logging.SafeLogger;
+import studio.pixelpoint.magicpet.infrastructure.retry.RetryExecutor;
 import studio.pixelpoint.magicpet.lesson.StudentBot;
 
 import java.nio.file.Path;
@@ -25,6 +27,7 @@ public final class MagicPetApplication {
     private MagicPetApplication() {}
 
     public static void main(String[] args) {
+        SafeLogger logger = new SafeLogger(System.err);
         try {
             AppConfig config = AppConfig.load(Path.of(".").toAbsolutePath().normalize());
             UiTexts texts = UiTexts.load();
@@ -35,17 +38,25 @@ public final class MagicPetApplication {
             String jdbcUrl = SqliteDatabase.migrate(config.databasePath());
             var facade = new PetFacade(gateway, new SqliteUserStore(jdbcUrl), planGenerator(config),
                     new FileAssetCatalog(config.assetDirectory()), texts);
-            var bot = new TelegramBotAdapter(new StudentBot(facade));
+            var bot = new TelegramBotAdapter(new StudentBot(facade, config.resetEnabled()), logger);
 
             try (var polling = new TelegramBotsLongPollingApplication()) {
-                polling.registerBot(config.telegramBotToken(), bot);
+                RetryExecutor.run(config.telegramRetryAttempts(),
+                        Duration.ofMillis(config.telegramRetryDelayMillis()),
+                        () -> polling.registerBot(config.telegramBotToken(), bot),
+                        RetryExecutor::sleep,
+                        logger);
                 System.out.println("Magic Pet запущен. Остановить: Ctrl+C");
                 Thread.currentThread().join();
             }
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();
-        } catch (Exception error) {
+        } catch (AppConfig.ConfigurationException | SqliteDatabase.DatabaseStartupException error) {
             System.err.println("Не удалось запустить Magic Pet: " + error.getMessage());
+            System.exit(1);
+        } catch (Exception error) {
+            logger.error("application.startup_failed", error);
+            System.err.println("Не удалось запустить Magic Pet. Проверьте конфигурацию и доступность сервисов.");
             System.exit(1);
         }
     }

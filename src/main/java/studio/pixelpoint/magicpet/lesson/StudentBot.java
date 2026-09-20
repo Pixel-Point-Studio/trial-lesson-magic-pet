@@ -9,16 +9,29 @@ import studio.pixelpoint.magicpet.domain.UserState;
 /** Простая учебная поверхность: ввод, условия и вызовы методов уровня продукта. */
 public final class StudentBot {
     private final PetFacade pet;
+    private final boolean resetEnabled;
 
     public StudentBot(PetFacade pet) {
+        this(pet, false);
+    }
+
+    public StudentBot(PetFacade pet, boolean resetEnabled) {
         this.pet = pet;
+        this.resetEnabled = resetEnabled;
     }
 
     public void receiveMessage(IncomingMessage message) {
         UserSession user = pet.getOrCreateUser(message.userId(), message.displayName());
 
         if (message.isCommand("/start")) {
-            pet.start(user);
+            if (user.state() == UserState.NEW) pet.start(user);
+            else pet.repeatPrompt(user);
+            return;
+        }
+
+        if (message.isCommand("/reset")) {
+            if (resetEnabled) pet.start(user);
+            else pet.repeatPrompt(user);
             return;
         }
 
@@ -38,16 +51,20 @@ public final class StudentBot {
         if (message.buttonPressed("action:task_done")) {
             if (user.state() == UserState.ACTIVE) {
                 pet.completeCurrentTask(user, message.deliveryId());
+            } else {
+                pet.repeatPrompt(user);
             }
             return;
         }
 
         if (message.buttonPressed("action:my_tasks")) {
-            pet.showTasks(user, false);
+            if (journeyReady(user)) pet.showTasks(user, false);
+            else pet.repeatPrompt(user);
             return;
         }
         if (message.buttonPressed("action:completed_tasks")) {
-            pet.showTasks(user, true);
+            if (journeyReady(user)) pet.showTasks(user, true);
+            else pet.repeatPrompt(user);
             return;
         }
         if (message.buttonPressed("action:add_task")) {
@@ -57,17 +74,20 @@ public final class StudentBot {
 
         Long openedTaskId = callbackId(message.buttonId(), "task:open:");
         if (openedTaskId != null) {
-            pet.showTask(user, openedTaskId);
+            if (journeyReady(user)) pet.showTask(user, openedTaskId);
+            else pet.repeatPrompt(user);
             return;
         }
         Long completedTaskId = callbackId(message.buttonId(), "task:done:");
         if (completedTaskId != null) {
-            pet.completeTask(user, completedTaskId, message.deliveryId());
+            if (journeyReady(user)) pet.completeTask(user, completedTaskId, message.deliveryId());
+            else pet.repeatPrompt(user);
             return;
         }
         Long deletedTaskId = callbackId(message.buttonId(), "task:delete:");
         if (deletedTaskId != null) {
-            pet.deleteTask(user, deletedTaskId);
+            if (journeyReady(user)) pet.deleteTask(user, deletedTaskId);
+            else pet.repeatPrompt(user);
             return;
         }
 
@@ -106,5 +126,9 @@ public final class StudentBot {
         } catch (NumberFormatException ignored) {
             return null;
         }
+    }
+
+    private boolean journeyReady(UserSession user) {
+        return user.state() == UserState.ACTIVE || user.state() == UserState.PLAN_COMPLETED;
     }
 }
