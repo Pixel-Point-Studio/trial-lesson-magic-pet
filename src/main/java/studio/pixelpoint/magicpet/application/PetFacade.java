@@ -8,6 +8,7 @@ import studio.pixelpoint.magicpet.domain.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 public final class PetFacade {
     private final TelegramGateway telegram;
@@ -15,6 +16,7 @@ public final class PetFacade {
     private final PlanGenerator plans;
     private final AssetCatalog assets;
     private final UiTexts texts;
+    private final TaskHints hints;
 
     public PetFacade(TelegramGateway telegram, UserStore users, PlanGenerator plans, AssetCatalog assets, UiTexts texts) {
         this.telegram = telegram;
@@ -22,6 +24,7 @@ public final class PetFacade {
         this.plans = plans;
         this.assets = assets;
         this.texts = texts;
+        this.hints = TaskHints.load();
     }
 
     public UserSession getOrCreateUser(long userId, String displayName) {
@@ -73,25 +76,9 @@ public final class PetFacade {
         return true;
     }
 
-    public void completeCurrentTask(UserSession user, String deliveryId) {
+    public ProgressResult completeCurrentTask(UserSession user, String deliveryId) {
         ProgressResult result = users.completeCurrentTask(user.userId(), deliveryId);
-        UserSession refreshed = users.getOrCreate(user.userId(), user.displayName());
-        if (!result.taskCompleted()) {
-            telegram.sendText(refreshed.userId(), texts.message("alreadyCompleted"));
-            return;
-        }
-        telegram.sendText(refreshed.userId(), texts.template("progress", Map.of(
-                "petName", refreshed.petName(), "xpAdded", result.xpAdded(), "totalXp", result.totalXp())));
-        if (result.levelUp()) {
-            telegram.sendText(refreshed.userId(), texts.template("levelUp", Map.of(
-                    "petName", refreshed.petName(), "level", result.level())));
-            showPet(refreshed);
-        }
-        if (result.planCompleted()) {
-            telegram.sendButtons(refreshed.userId(), texts.message("planCompleted"), menuButtons());
-        } else {
-            showCurrentTask(refreshed);
-        }
+        return result;
     }
 
     public void repeatPrompt(UserSession user) {
@@ -104,21 +91,28 @@ public final class PetFacade {
             case PLAN_COMPLETED -> telegram.sendButtons(user.userId(), texts.message("planCompleted"), menuButtons());
             case WAITING_TASK_TITLE -> telegram.sendText(user.userId(), texts.message("askTaskTitle"));
             case WAITING_TASK_DESCRIPTION -> telegram.sendText(user.userId(), texts.message("askTaskDescription"));
+            case WAITING_PET_RENAME -> telegram.sendText(user.userId(), texts.message("askPetRename"));
         }
     }
 
     public void showCurrentTask(UserSession user) {
+        showCurrentTask(user, List.of());
+    }
+
+    public void showCurrentTask(UserSession user, List<Button> routeButtons) {
         PlanTask task = user.currentTask();
         if (task == null) return;
         String body = texts.template("task", Map.of(
                 "number", user.currentTaskIndex() + 1,
                 "title", task.title(),
                 "description", task.description()));
-        telegram.sendButtons(user.userId(), body, List.of(
-                new Button("action:task_done", texts.button("taskDone")),
-                new Button("action:my_tasks", texts.button("myTasks")),
-                new Button("action:add_task", texts.button("addTask")),
-                new Button("action:completed_tasks", texts.button("completedTasks"))));
+        List<Button> buttons = new ArrayList<>();
+        buttons.add(new Button("action:task_done", texts.button("taskDone")));
+        buttons.addAll(routeButtons);
+        buttons.add(new Button("action:my_tasks", texts.button("myTasks")));
+        buttons.add(new Button("action:add_task", texts.button("addTask")));
+        buttons.add(new Button("action:completed_tasks", texts.button("completedTasks")));
+        telegram.sendButtons(user.userId(), body, buttons);
     }
 
     public void showTasks(UserSession user, boolean completed) {
@@ -144,7 +138,7 @@ public final class PetFacade {
                     "status", task.completed() ? "выполнено" : "активно"));
             List<Button> buttons = new java.util.ArrayList<>();
             if (!task.completed()) buttons.add(new Button("task:done:" + task.id(), texts.button("taskDone")));
-            buttons.add(new Button("task:delete:" + task.id(), texts.button("deleteTask")));
+            buttons.add(new Button("task:confirm_delete:" + task.id(), texts.button("deleteTask")));
             buttons.add(new Button(task.completed() ? "action:completed_tasks" : "action:my_tasks",
                     texts.button("back")));
             telegram.sendButtons(user.userId(), body, buttons);
@@ -212,11 +206,92 @@ public final class PetFacade {
     }
 
     public void showPet(UserSession user) {
+        showPet(user, user.level());
+    }
+
+    public void showPet(UserSession user, int displayedLevel) {
         String caption = texts.template("petText", Map.of(
-                "petName", user.petName(), "level", user.level(), "xp", user.experience()));
-        assets.find(user.scenario(), user.level())
+                "petName", user.petName(), "level", displayedLevel, "xp", user.experience()));
+        assets.find(user.scenario(), displayedLevel)
                 .ifPresentOrElse(path -> telegram.sendPhoto(user.userId(), path, caption),
                         () -> telegram.sendText(user.userId(), caption));
+    }
+
+    public UserSession refreshUser(UserSession user) {
+        return users.getOrCreate(user.userId(), user.displayName());
+    }
+
+    public void showProgress(UserSession user, ProgressResult result) {
+        if (!result.taskCompleted()) {
+            telegram.sendText(user.userId(), texts.message("alreadyCompleted"));
+            return;
+        }
+        telegram.sendText(user.userId(), texts.template("progress", Map.of(
+                "petName", user.petName(), "xpAdded", result.xpAdded(), "totalXp", result.totalXp())));
+    }
+
+    public void showLevelUp(UserSession user, ProgressResult result) {
+        telegram.sendText(user.userId(), texts.template("levelUp", Map.of(
+                "petName", user.petName(), "level", result.level())));
+    }
+
+    public void continueAfterCompletion(UserSession user, ProgressResult result, List<Button> routeButtons) {
+        if (!result.taskCompleted()) return;
+        if (result.planCompleted()) telegram.sendButtons(user.userId(), texts.message("planCompleted"), menuButtons());
+        else showCurrentTask(user, routeButtons);
+    }
+
+    public void beginPetRename(UserSession user) {
+        user.beginPetRename();
+        users.save(user);
+        telegram.sendText(user.userId(), texts.message("askPetRename"));
+    }
+
+    public boolean renamePet(UserSession user, String newName) {
+        String clean = clean(newName);
+        if (clean.isBlank() || clean.length() > 32) {
+            telegram.sendText(user.userId(), texts.message("invalidName"));
+            return false;
+        }
+        user.renamePet(clean);
+        users.save(user);
+        telegram.sendText(user.userId(), texts.message("petRenamed"));
+        showPet(user);
+        return true;
+    }
+
+    public void showHint(UserSession user) {
+        String hint = user.currentTask() == null
+                ? hints.customHint()
+                : hints.hint(user.scenario(), user.currentTaskIndex());
+        telegram.sendText(user.userId(), "💡 " + hint);
+    }
+
+    public void showLevelProgress(UserSession user) {
+        LevelProgression.experienceToNextLevel(user.experience()).ifPresentOrElse(
+                xp -> telegram.sendText(user.userId(), texts.template("levelProgress", Map.of("xp", xp))),
+                () -> telegram.sendText(user.userId(), texts.message("maxLevel")));
+    }
+
+    public void showPlan(UserSession user) {
+        StringBuilder plan = new StringBuilder();
+        for (int index = 0; index < user.tasks().size(); index++) {
+            PlanTask task = user.tasks().get(index);
+            String marker = task.completed() ? "✅" : index == user.currentTaskIndex() ? "👉" : "⏳";
+            if (!plan.isEmpty()) plan.append('\n');
+            plan.append(marker).append(' ').append(index + 1).append(". ").append(task.title());
+        }
+        telegram.sendText(user.userId(), texts.template("fullPlan", Map.of("plan", plan.toString())));
+    }
+
+    public void confirmTaskDeletion(UserSession user, long taskId) {
+        if (users.findTask(user.userId(), taskId).isEmpty()) {
+            telegram.sendText(user.userId(), texts.message("taskNotFound"));
+            return;
+        }
+        telegram.sendButtons(user.userId(), texts.message("deleteConfirmation"), List.of(
+                new Button("task:delete:" + taskId, texts.button("confirmYes")),
+                new Button("task:open:" + taskId, texts.button("confirmNo"))));
     }
 
     private static String clean(String text) {

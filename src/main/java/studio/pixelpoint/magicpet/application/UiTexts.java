@@ -14,11 +14,14 @@ public final class UiTexts {
         this.root = root;
         require("buttons", "scenarioStudy", "scenarioSport", "scenarioBlog", "taskDone",
                 "myTasks", "addTask", "completedTasks", "deleteTask", "back");
+        require("buttons", "showPet", "renamePet", "hint", "levelProgress", "showPlan", "confirmYes", "confirmNo");
         require("messages", "chooseScenario", "askPetName", "askGoal", "fallbackPlanUsed",
                 "invalidName", "invalidGoal", "alreadyCompleted", "planCompleted", "activeTasks",
                 "completedTasks", "noActiveTasks", "noCompletedTasks", "askTaskTitle", "askTaskDescription",
-                "invalidTaskTitle", "invalidTaskDescription", "taskAdded", "taskDeleted", "taskNotFound");
-        require("templates", "planReady", "task", "taskCard", "progress", "levelUp", "petText");
+                "invalidTaskTitle", "invalidTaskDescription", "taskAdded", "taskDeleted", "taskNotFound",
+                "askPetRename", "petRenamed", "deleteConfirmation", "maxLevel");
+        require("templates", "planReady", "task", "taskCard", "progress", "levelUp", "petText",
+                "levelProgress", "fullPlan");
     }
 
     public static UiTexts load() {

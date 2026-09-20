@@ -17,21 +17,34 @@ cd "$temp_root"
 
 for route in study sport blog; do
   patch="lesson/patches/$route.patch"
-  test_pattern="*LessonRouteContractTest.${route}Route*"
+  test_pattern="*LessonRouteContractTest.${route}*"
+  case "$route" in
+    study) tests=(studyWrongPet studySavesCustomName studyShowsPet studyRenamesPet) ;;
+    sport) tests=(sportLevelsAtOneHundred sportShowsCurrentLevelImage sportShowsHint sportShowsLevelProgress) ;;
+    blog) tests=(blogShowsActiveTasks blogDeletesWithoutXp blogConfirmsDeletion blogShowsFullPlan) ;;
+  esac
 
   git apply --check "$patch"
   git apply "$patch"
   GRADLE_USER_HOME="${GRADLE_USER_HOME:-$temp_root/.gradle-check}" ./gradlew compileJava --quiet
 
-  set +e
-  GRADLE_USER_HOME="${GRADLE_USER_HOME:-$temp_root/.gradle-check}" \
-    ./gradlew test --tests "$test_pattern" --quiet >/dev/null 2>&1
-  defect_result=$?
-  set -e
-  if [[ $defect_result -eq 0 ]]; then
-    echo "Ошибка: дефект $route не воспроизводится" >&2
+  todo_count="$(grep -R 'TODO STUDENT' src/main/java | wc -l | tr -d ' ')"
+  if [[ "$todo_count" != "4" ]]; then
+    echo "Ошибка: patch $route должен создавать ровно четыре TODO STUDENT" >&2
     exit 1
   fi
+
+  for test_name in "${tests[@]}"; do
+    set +e
+    GRADLE_USER_HOME="${GRADLE_USER_HOME:-$temp_root/.gradle-check}" \
+      ./gradlew test --tests "*LessonRouteContractTest.$test_name" --quiet >/dev/null 2>&1
+    defect_result=$?
+    set -e
+    if [[ $defect_result -eq 0 ]]; then
+      echo "Ошибка: учебная задача $test_name не воспроизводится" >&2
+      exit 1
+    fi
+  done
 
   git apply --reverse "$patch"
   GRADLE_USER_HOME="${GRADLE_USER_HOME:-$temp_root/.gradle-check}" \

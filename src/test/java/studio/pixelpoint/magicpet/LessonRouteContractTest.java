@@ -1,69 +1,166 @@
 package studio.pixelpoint.magicpet;
 
 import org.junit.jupiter.api.Test;
-import studio.pixelpoint.magicpet.application.IncomingMessage;
-import studio.pixelpoint.magicpet.application.PetFacade;
-import studio.pixelpoint.magicpet.application.UiTexts;
+import org.junit.jupiter.api.io.TempDir;
+import studio.pixelpoint.magicpet.application.*;
 import studio.pixelpoint.magicpet.application.port.AssetCatalog;
-import studio.pixelpoint.magicpet.domain.Scenario;
-import studio.pixelpoint.magicpet.domain.UserState;
+import studio.pixelpoint.magicpet.application.port.UserStore;
+import studio.pixelpoint.magicpet.domain.*;
 import studio.pixelpoint.magicpet.infrastructure.memory.InMemoryUserStore;
 import studio.pixelpoint.magicpet.infrastructure.plan.FallbackPlanGenerator;
+import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteDatabase;
+import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteUserStore;
 import studio.pixelpoint.magicpet.lesson.StudentBot;
+import studio.pixelpoint.magicpet.lesson.route.StudyLesson;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class LessonRouteContractTest {
-    @Test
-    void studyRouteSelectsStudyScenario() {
-        Harness harness = harness();
-        harness.bot.receiveMessage(text(1, "/start", "start"));
-        harness.bot.receiveMessage(button(1, "scenario:study", "study"));
+    @TempDir Path tempDir;
 
-        var user = harness.users.getOrCreate(1, "Ученик");
-        assertEquals(Scenario.STUDY, user.scenario());
-        assertEquals(UserState.WAITING_PET_NAME, user.state());
+    @Test void studyWrongPet() {
+        Harness h = memoryHarness();
+        startAndSelect(h, 1, "study");
+        assertEquals(Scenario.STUDY, h.users.getOrCreate(1, "Ученик").scenario());
     }
 
-    @Test
-    void sportRouteRecognizesExactCallback() {
-        Harness harness = harness();
-        harness.bot.receiveMessage(text(2, "/start", "start"));
-        harness.bot.receiveMessage(button(2, "scenario:sport", "sport"));
-
-        var user = harness.users.getOrCreate(2, "Ученик");
-        assertEquals(Scenario.SPORT, user.scenario());
-        assertEquals(UserState.WAITING_PET_NAME, user.state());
+    @Test void studySavesCustomName() {
+        SqliteUserStore users = new SqliteUserStore(SqliteDatabase.migrate(tempDir.resolve("name.db")));
+        Harness h = harness(users);
+        UserSession user = users.getOrCreate(2, "Ученик");
+        user.begin();
+        user.chooseScenario(Scenario.STUDY);
+        users.save(user);
+        new StudyLesson().acceptPetName(h.facade, user, "Искорка");
+        assertEquals("Искорка", users.getOrCreate(2, "Ученик").petName());
     }
 
-    @Test
-    void blogRouteDeletesTaskWithoutAwardingXp() {
-        Harness harness = harness();
-        long userId = 3;
-        harness.bot.receiveMessage(text(userId, "/start", "start"));
-        harness.bot.receiveMessage(button(userId, "scenario:blog", "blog"));
-        harness.bot.receiveMessage(text(userId, "Скриба", "name"));
-        harness.bot.receiveMessage(text(userId, "Запустить блог", "goal"));
-        harness.bot.receiveMessage(button(userId, "action:add_task", "add"));
-        harness.bot.receiveMessage(text(userId, "Черновик", "title"));
-        harness.bot.receiveMessage(text(userId, "Написать два предложения", "description"));
-        long taskId = harness.users.findTasks(userId, false).stream()
-                .filter(task -> task.custom()).findFirst().orElseThrow().id();
-
-        harness.bot.receiveMessage(button(userId, "task:delete:" + taskId, "delete"));
-
-        assertTrue(harness.users.findTask(userId, taskId).isEmpty());
-        assertEquals(0, harness.users.getOrCreate(userId, "Ученик").experience());
+    @Test void studyShowsPet() {
+        Harness h = active(memoryHarness(), 3, "study");
+        int before = h.users.getOrCreate(3, "Ученик").experience();
+        h.bot.receiveMessage(button(3, "action:show_pet", "show"));
+        assertEquals(Path.of("study", "level-1.png"), h.telegram.sent().getLast().path());
+        assertTrue(h.telegram.sent().getLast().text().contains("Руни"));
+        assertEquals(before, h.users.getOrCreate(3, "Ученик").experience());
     }
 
-    private Harness harness() {
-        InMemoryUserStore users = new InMemoryUserStore();
+    @Test void studyRenamesPet() {
+        SqliteUserStore users = new SqliteUserStore(SqliteDatabase.migrate(tempDir.resolve("rename.db")));
+        Harness h = active(harness(users), 4, "study");
+        h.bot.receiveMessage(button(4, "action:rename_pet", "rename"));
+        h.bot.receiveMessage(text(4, "", "empty"));
+        assertEquals(UserState.WAITING_PET_RENAME, users.getOrCreate(4, "Ученик").state());
+        h.bot.receiveMessage(text(4, "x".repeat(33), "long"));
+        assertEquals(UserState.WAITING_PET_RENAME, users.getOrCreate(4, "Ученик").state());
+        h.bot.receiveMessage(text(4, "Искорка", "new-name"));
+        assertEquals("Искорка", users.getOrCreate(4, "Ученик").petName());
+        assertEquals(UserState.ACTIVE, users.getOrCreate(4, "Ученик").state());
+    }
+
+    @Test void sportLevelsAtOneHundred() {
+        assertEquals(1, LevelProgression.levelFor(99));
+        assertEquals(2, LevelProgression.levelFor(100));
+        assertEquals(2, LevelProgression.levelFor(249));
+        assertEquals(3, LevelProgression.levelFor(250));
+    }
+
+    @Test void sportShowsCurrentLevelImage() {
+        Harness h = active(memoryHarness(), 5, "sport");
+        h.bot.receiveMessage(button(5, "action:task_done", "done-1"));
+        h.bot.receiveMessage(button(5, "action:task_done", "done-2"));
+        assertTrue(h.telegram.sent().stream().anyMatch(item ->
+                Path.of("sport", "level-2.png").equals(item.path())));
+    }
+
+    @Test void sportShowsHint() {
+        Harness h = active(memoryHarness(), 6, "sport");
+        int before = h.users.getOrCreate(6, "Ученик").experience();
+        int taskBefore = h.users.getOrCreate(6, "Ученик").currentTaskIndex();
+        h.bot.receiveMessage(button(6, "action:hint", "hint"));
+        assertTrue(h.telegram.sent().getLast().text().startsWith("💡"));
+        assertEquals(before, h.users.getOrCreate(6, "Ученик").experience());
+        assertEquals(taskBefore, h.users.getOrCreate(6, "Ученик").currentTaskIndex());
+    }
+
+    @Test void sportShowsLevelProgress() {
+        Harness h = active(memoryHarness(), 7, "sport");
+        h.bot.receiveMessage(button(7, "action:task_done", "done"));
+        h.bot.receiveMessage(button(7, "action:level_progress", "progress"));
+        assertTrue(h.telegram.sent().getLast().text().contains("50 XP"));
+        h.bot.receiveMessage(button(7, "action:task_done", "done-2"));
+        h.bot.receiveMessage(button(7, "action:level_progress", "progress-2"));
+        assertTrue(h.telegram.sent().getLast().text().contains("150 XP"));
+    }
+
+    @Test void blogShowsActiveTasks() {
+        Harness h = active(memoryHarness(), 8, "blog");
+        long active = h.users.addCustomTask(8, "Активная", "Описание");
+        long done = h.users.addCustomTask(8, "Готовая", "Описание");
+        h.users.completeTask(8, done, "complete");
+        h.bot.receiveMessage(button(8, "action:my_tasks", "list"));
+        var ids = h.telegram.sent().getLast().buttons().stream().map(Button::id).toList();
+        assertTrue(ids.contains("task:open:" + active));
+        assertFalse(ids.contains("task:open:" + done));
+    }
+
+    @Test void blogDeletesWithoutXp() {
+        Harness h = active(memoryHarness(), 9, "blog");
+        long task = h.users.addCustomTask(9, "Удалить", "Описание");
+        h.bot.receiveMessage(button(9, "task:delete:" + task, "delete"));
+        assertTrue(h.users.findTask(9, task).isEmpty());
+        assertEquals(0, h.users.getOrCreate(9, "Ученик").experience());
+    }
+
+    @Test void blogConfirmsDeletion() {
+        Harness h = active(memoryHarness(), 10, "blog");
+        long task = h.users.addCustomTask(10, "Черновик", "Описание");
+        h.bot.receiveMessage(button(10, "task:confirm_delete:" + task, "ask"));
+        assertTrue(h.users.findTask(10, task).isPresent());
+        assertEquals(2, h.telegram.sent().getLast().buttons().size());
+        h.bot.receiveMessage(button(10, "task:open:" + task, "no"));
+        assertTrue(h.users.findTask(10, task).isPresent());
+        h.bot.receiveMessage(button(10, "task:delete:" + task, "yes"));
+        assertTrue(h.users.findTask(10, task).isEmpty());
+        assertEquals(0, h.users.getOrCreate(10, "Ученик").experience());
+    }
+
+    @Test void blogShowsFullPlan() {
+        Harness h = active(memoryHarness(), 11, "blog");
+        h.bot.receiveMessage(button(11, "action:show_plan", "plan-before"));
+        assertTrue(h.telegram.sent().getLast().text().contains("👉 1."));
+        h.bot.receiveMessage(button(11, "action:task_done", "done"));
+        int before = h.users.getOrCreate(11, "Ученик").experience();
+        h.bot.receiveMessage(button(11, "action:show_plan", "plan"));
+        String plan = h.telegram.sent().getLast().text();
+        assertTrue(plan.contains("✅ 1."));
+        assertTrue(plan.contains("👉 2."));
+        assertTrue(plan.contains("⏳ 3."));
+        assertEquals(before, h.users.getOrCreate(11, "Ученик").experience());
+    }
+
+    private Harness active(Harness h, long id, String route) {
+        startAndSelect(h, id, route);
+        h.bot.receiveMessage(text(id, switch (route) { case "study" -> "Руни"; case "sport" -> "Игнис"; default -> "Скриба"; }, "name"));
+        h.bot.receiveMessage(text(id, "Моя цель", "goal"));
+        return h;
+    }
+
+    private void startAndSelect(Harness h, long id, String route) {
+        h.bot.receiveMessage(text(id, "/start", "start"));
+        h.bot.receiveMessage(button(id, "scenario:" + route, "scenario"));
+    }
+
+    private Harness memoryHarness() { return harness(new InMemoryUserStore()); }
+
+    private Harness harness(UserStore users) {
         FakeTelegramGateway telegram = new FakeTelegramGateway();
-        AssetCatalog noAssets = (scenario, level) -> Optional.empty();
-        PetFacade facade = new PetFacade(telegram, users, new FallbackPlanGenerator(), noAssets, UiTexts.load());
-        return new Harness(new StudentBot(facade), users);
+        AssetCatalog assets = (scenario, level) -> Optional.of(
+                Path.of(scenario.name().toLowerCase(), "level-" + level + ".png"));
+        PetFacade facade = new PetFacade(telegram, users, new FallbackPlanGenerator(), assets, UiTexts.load());
+        return new Harness(new StudentBot(facade), users, telegram, facade);
     }
 
     private IncomingMessage text(long id, String value, String delivery) {
@@ -74,5 +171,5 @@ class LessonRouteContractTest {
         return new IncomingMessage(id, "Ученик", null, value, delivery);
     }
 
-    private record Harness(StudentBot bot, InMemoryUserStore users) {}
+    private record Harness(StudentBot bot, UserStore users, FakeTelegramGateway telegram, PetFacade facade) {}
 }

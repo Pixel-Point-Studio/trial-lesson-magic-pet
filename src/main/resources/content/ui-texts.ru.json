@@ -8,6 +8,13 @@
     "addTask": "➕ Добавить задачу",
     "completedTasks": "🏆 Выполненные",
     "deleteTask": "🗑 Удалить",
+    "showPet": "🐾 Мой Pet",
+    "renamePet": "✏️ Переименовать Pet",
+    "hint": "💡 Подсказка",
+    "levelProgress": "📈 До следующего уровня",
+    "showPlan": "🗺 Весь план",
+    "confirmYes": "Да, удалить",
+    "confirmNo": "Нет, оставить",
     "back": "↩️ К списку"
   },
   "messages": {
@@ -31,6 +38,10 @@
     "taskAdded": "Задача добавлена в маршрут ✨",
     "taskDeleted": "Задача удалена.",
     "taskNotFound": "Эта задача не найдена или принадлежит другому пользователю."
+    ,"askPetRename": "Напиши новое имя Magic Pet — от 1 до 32 символов."
+    ,"petRenamed": "Новое имя сохранено ✨"
+    ,"deleteConfirmation": "Удалить эту задачу? XP за удаление не начисляется."
+    ,"maxLevel": "Достигнут максимальный уровень!"
   },
   "templates": {
     "planReady": "Твой маршрут готов: {summary}",
@@ -38,6 +49,8 @@
     "taskCard": "{title}\n\n{description}\n\nСтатус: {status}",
     "progress": "{petName} получает {xpAdded} XP. Всего: {totalXp} XP.",
     "levelUp": "🌟 {petName} достиг уровня {level}! Новая форма пробуждена!",
-    "petText": "🐾 {petName} · уровень {level} · {xp} XP"
+    "petText": "🐾 {petName} · уровень {level} · {xp} XP",
+    "levelProgress": "До следующего уровня осталось {xp} XP.",
+    "fullPlan": "{plan}"
   }
 }

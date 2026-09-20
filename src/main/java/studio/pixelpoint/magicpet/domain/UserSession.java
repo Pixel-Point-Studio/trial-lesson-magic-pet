@@ -135,6 +135,21 @@ public final class UserSession {
         state = UserState.WAITING_TASK_TITLE;
     }
 
+    public void beginPetRename() {
+        if (state != UserState.ACTIVE && state != UserState.PLAN_COMPLETED) {
+            throw new IllegalStateException("Сначала завершите создание питомца");
+        }
+        taskCreationReturnState = state;
+        state = UserState.WAITING_PET_RENAME;
+    }
+
+    public void renamePet(String value) {
+        if (state != UserState.WAITING_PET_RENAME) throw new IllegalStateException("Новое имя сейчас не ожидается");
+        petName = value;
+        state = taskCreationReturnState == null ? UserState.ACTIVE : taskCreationReturnState;
+        taskCreationReturnState = null;
+    }
+
     public void setDraftTaskTitle(String title) {
         if (state != UserState.WAITING_TASK_TITLE) throw new IllegalStateException("Название сейчас не ожидается");
         draftTaskTitle = title;

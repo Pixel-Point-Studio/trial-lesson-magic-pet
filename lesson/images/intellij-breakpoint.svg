@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360" role="img" aria-labelledby="title desc">
+  <title id="title">Breakpoint в IntelliJ IDEA</title>
+  <desc id="desc">Красная точка слева от строки и кнопка запуска с отладкой.</desc>
+  <rect width="900" height="360" rx="18" fill="#202124"/>
+  <rect x="0" y="0" width="900" height="54" rx="18" fill="#303238"/>
+  <text x="28" y="35" fill="#e8eaed" font-family="Arial" font-size="20">StudyLesson.java</text>
+  <circle cx="818" cy="27" r="14" fill="#4caf50"/>
+  <path d="M814 19 L827 27 L814 35 Z" fill="white"/>
+  <circle cx="861" cy="27" r="14" fill="#3f8cff"/>
+  <path d="M855 20 L867 34 M867 20 L855 34" stroke="white" stroke-width="3"/>
+  <rect x="0" y="54" width="72" height="306" fill="#292b30"/>
+  <text x="42" y="119" text-anchor="end" fill="#9aa0a6" font-family="monospace" font-size="18">16</text>
+  <circle cx="58" cy="112" r="9" fill="#e53935"/>
+  <rect x="72" y="93" width="828" height="38" fill="#3b3133"/>
+  <text x="92" y="119" fill="#e8eaed" font-family="monospace" font-size="18">pet.selectScenario(user, Scenario.STUDY);</text>
+  <text x="42" y="165" text-anchor="end" fill="#9aa0a6" font-family="monospace" font-size="18">17</text>
+  <text x="92" y="165" fill="#9cdcfe" font-family="monospace" font-size="18">else pet.repeatPrompt(user);</text>
+  <text x="92" y="242" fill="#e8eaed" font-family="Arial" font-size="19">1. Нажми слева от номера строки</text>
+  <text x="92" y="280" fill="#e8eaed" font-family="Arial" font-size="19">2. Запусти через значок отладки</text>
+  <text x="92" y="318" fill="#e8eaed" font-family="Arial" font-size="19">3. Повтори действие в Telegram</text>
+</svg>

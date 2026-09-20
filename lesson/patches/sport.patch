@@ -1,12 +1,52 @@
-diff --git a/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java b/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java
---- a/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java
-+++ b/src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java
-@@ -42,6 +42,7 @@ public final class StudentBot {
-             return;
+diff --git a/src/main/java/studio/pixelpoint/magicpet/domain/LevelProgression.java b/src/main/java/studio/pixelpoint/magicpet/domain/LevelProgression.java
+index 07f4317..db96e15 100644
+--- a/src/main/java/studio/pixelpoint/magicpet/domain/LevelProgression.java
++++ b/src/main/java/studio/pixelpoint/magicpet/domain/LevelProgression.java
+@@ -9,7 +9,8 @@ public final class LevelProgression {
+ 
+     public static int levelFor(int experience) {
+         if (experience >= 250) return 3;
+-        if (experience >= 100) return 2;
++        // TODO STUDENT I1: проверь значение ровно на границе уровня.
++        if (experience > 100) return 2;
+         return 1;
+     }
+ 
+diff --git a/src/main/java/studio/pixelpoint/magicpet/lesson/route/SportLesson.java b/src/main/java/studio/pixelpoint/magicpet/lesson/route/SportLesson.java
+index 65590bd..1899e87 100644
+--- a/src/main/java/studio/pixelpoint/magicpet/lesson/route/SportLesson.java
++++ b/src/main/java/studio/pixelpoint/magicpet/lesson/route/SportLesson.java
+@@ -20,20 +20,12 @@ public final class SportLesson implements LessonRoute {
+     // ISSUE I3 — кнопка «Подсказка»
+     // ISSUE I4 — кнопка «До следующего уровня»
+     @Override public List<Button> taskButtons() {
+-        return List.of(
+-                new Button("action:hint", "💡 Подсказка"),
+-                new Button("action:level_progress", "📈 До следующего уровня"));
++        // TODO STUDENT I3: добавь кнопку подсказки и её обработчик ниже.
++        // TODO STUDENT I4: добавь кнопку прогресса и её обработчик ниже.
++        return List.of();
+     }
+ 
+     @Override public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
+-        if (message.buttonPressed("action:hint")) {
+-            pet.showHint(user);
+-            return true;
+-        }
+-        if (message.buttonPressed("action:level_progress")) {
+-            pet.showLevelProgress(user);
+-            return true;
+-        }
+         return false;
+     }
+ 
+@@ -45,7 +37,8 @@ public final class SportLesson implements LessonRoute {
+         pet.showProgress(refreshed, result);
+         if (result.levelUp()) {
+             pet.showLevelUp(refreshed, result);
+-            pet.showPet(refreshed, result.level());
++            // TODO STUDENT I2: покажи изображение фактического нового уровня.
++            pet.showPet(refreshed, 1);
          }
--        if (message.buttonPressed("scenario:sport")) {
-+        // TODO STUDENT: сравни callback ID с условием.
-+        if (message.buttonPressed("scenario:sports")) {
-             chooseScenario(user, Scenario.SPORT);
-             return;
-         }
+         pet.continueAfterCompletion(refreshed, result, taskButtons());
+     }
