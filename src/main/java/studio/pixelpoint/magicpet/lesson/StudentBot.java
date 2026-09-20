@@ -42,12 +42,49 @@ public final class StudentBot {
             return;
         }
 
+        if (message.buttonPressed("action:my_tasks")) {
+            pet.showTasks(user, false);
+            return;
+        }
+        if (message.buttonPressed("action:completed_tasks")) {
+            pet.showTasks(user, true);
+            return;
+        }
+        if (message.buttonPressed("action:add_task")) {
+            pet.beginTaskCreation(user);
+            return;
+        }
+
+        Long openedTaskId = callbackId(message.buttonId(), "task:open:");
+        if (openedTaskId != null) {
+            pet.showTask(user, openedTaskId);
+            return;
+        }
+        Long completedTaskId = callbackId(message.buttonId(), "task:done:");
+        if (completedTaskId != null) {
+            pet.completeTask(user, completedTaskId, message.deliveryId());
+            return;
+        }
+        Long deletedTaskId = callbackId(message.buttonId(), "task:delete:");
+        if (deletedTaskId != null) {
+            pet.deleteTask(user, deletedTaskId);
+            return;
+        }
+
         if (message.hasText() && user.state() == UserState.WAITING_PET_NAME) {
             pet.namePet(user, message.text());
             return;
         }
         if (message.hasText() && user.state() == UserState.WAITING_GOAL) {
             pet.createPlan(user, message.text());
+            return;
+        }
+        if (message.hasText() && user.state() == UserState.WAITING_TASK_TITLE) {
+            pet.acceptTaskTitle(user, message.text());
+            return;
+        }
+        if (message.hasText() && user.state() == UserState.WAITING_TASK_DESCRIPTION) {
+            pet.acceptTaskDescription(user, message.text());
             return;
         }
 
@@ -59,6 +96,15 @@ public final class StudentBot {
             pet.selectScenario(user, scenario);
         } else {
             pet.repeatPrompt(user);
+        }
+    }
+
+    private Long callbackId(String buttonId, String prefix) {
+        if (buttonId == null || !buttonId.startsWith(prefix)) return null;
+        try {
+            return Long.parseLong(buttonId.substring(prefix.length()));
+        } catch (NumberFormatException ignored) {
+            return null;
         }
     }
 }

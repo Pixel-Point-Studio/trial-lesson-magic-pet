@@ -9,4 +9,8 @@ public record GeneratedPlan(String summary, List<PlanTask> tasks) {
             throw new IllegalArgumentException("План должен содержать описание и ровно три задачи");
         }
     }
+
+    public PlanSource source() {
+        return tasks.getFirst().source();
+    }
 }

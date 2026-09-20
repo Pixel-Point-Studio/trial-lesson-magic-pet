@@ -14,6 +14,8 @@ public final class UserSession {
     private List<PlanTask> tasks = new ArrayList<>();
     private int currentTaskIndex;
     private int experience;
+    private String draftTaskTitle;
+    private UserState taskCreationReturnState;
 
     public UserSession(long userId, String displayName) {
         this.userId = userId;
@@ -28,7 +30,9 @@ public final class UserSession {
             String petName,
             String goal,
             List<PlanTask> tasks,
-            int experience
+            int experience,
+            String draftTaskTitle,
+            UserState taskCreationReturnState
     ) {
         UserSession session = new UserSession(userId, displayName);
         session.state = state;
@@ -43,6 +47,8 @@ public final class UserSession {
             session.currentTaskIndex++;
         }
         session.experience = experience;
+        session.draftTaskTitle = draftTaskTitle;
+        session.taskCreationReturnState = taskCreationReturnState;
         return session;
     }
 
@@ -56,7 +62,9 @@ public final class UserSession {
     public List<PlanTask> tasks() { return List.copyOf(tasks); }
     public int currentTaskIndex() { return currentTaskIndex; }
     public int experience() { return experience; }
-    public int level() { return experience >= 100 ? 2 : 1; }
+    public int level() { return LevelProgression.levelFor(experience); }
+    public String draftTaskTitle() { return draftTaskTitle; }
+    public UserState taskCreationReturnState() { return taskCreationReturnState; }
 
     public void updateDisplayName(String value) {
         if (value != null && !value.isBlank()) displayName = value;
@@ -71,6 +79,8 @@ public final class UserSession {
         tasks = new ArrayList<>();
         currentTaskIndex = 0;
         experience = 0;
+        draftTaskTitle = null;
+        taskCreationReturnState = null;
     }
 
     public void chooseScenario(Scenario value) {
@@ -107,5 +117,33 @@ public final class UserSession {
         if (currentTaskIndex >= tasks.size()) state = UserState.PLAN_COMPLETED;
         return new ProgressResult(true, PlanTask.XP_REWARD, experience, level(), level() > oldLevel,
                 state == UserState.PLAN_COMPLETED);
+    }
+
+    public ProgressResult awardTaskXp() {
+        int oldLevel = level();
+        experience += PlanTask.XP_REWARD;
+        return new ProgressResult(true, PlanTask.XP_REWARD, experience, level(), level() > oldLevel,
+                state == UserState.PLAN_COMPLETED);
+    }
+
+    public void beginTaskCreation() {
+        if (state != UserState.ACTIVE && state != UserState.PLAN_COMPLETED) {
+            throw new IllegalStateException("Сначала завершите создание питомца");
+        }
+        taskCreationReturnState = state;
+        draftTaskTitle = null;
+        state = UserState.WAITING_TASK_TITLE;
+    }
+
+    public void setDraftTaskTitle(String title) {
+        if (state != UserState.WAITING_TASK_TITLE) throw new IllegalStateException("Название сейчас не ожидается");
+        draftTaskTitle = title;
+        state = UserState.WAITING_TASK_DESCRIPTION;
+    }
+
+    public void finishTaskCreation() {
+        state = taskCreationReturnState == null ? UserState.PLAN_COMPLETED : taskCreationReturnState;
+        draftTaskTitle = null;
+        taskCreationReturnState = null;
     }
 }

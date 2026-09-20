@@ -3,7 +3,12 @@
     "scenarioStudy": "📚 Учёба",
     "scenarioSport": "🔥 Спорт",
     "scenarioBlog": "🦊 Личный блог",
-    "taskDone": "✅ Выполнено"
+    "taskDone": "✅ Выполнено",
+    "myTasks": "📋 Мои задачи",
+    "addTask": "➕ Добавить задачу",
+    "completedTasks": "🏆 Выполненные",
+    "deleteTask": "🗑 Удалить",
+    "back": "↩️ К списку"
   },
   "messages": {
     "sendStart": "Отправь /start, чтобы разбудить своего Magic Pet.",
@@ -14,11 +19,23 @@
     "invalidName": "Имя должно содержать от 1 до 32 символов. Попробуй ещё раз.",
     "invalidGoal": "Опиши цель короче: от 1 до 500 символов.",
     "alreadyCompleted": "Эта задача уже выполнена — дополнительный XP не начислен.",
-    "planCompleted": "Маршрут завершён! Твой Magic Pet гордится тобой. Отправь /start, чтобы начать заново."
+    "planCompleted": "Маршрут завершён! Твой Magic Pet гордится тобой. Можно добавить собственные задачи и продолжить развитие.",
+    "activeTasks": "Активные задачи:",
+    "completedTasks": "Выполненные задачи:",
+    "noActiveTasks": "Активных задач пока нет.",
+    "noCompletedTasks": "Выполненных задач пока нет.",
+    "askTaskTitle": "Напиши короткое название новой задачи — до 60 символов.",
+    "askTaskDescription": "Теперь добавь описание — до 500 символов.",
+    "invalidTaskTitle": "Название должно содержать от 1 до 60 символов. Попробуй ещё раз.",
+    "invalidTaskDescription": "Описание должно содержать от 1 до 500 символов. Попробуй ещё раз.",
+    "taskAdded": "Задача добавлена в маршрут ✨",
+    "taskDeleted": "Задача удалена.",
+    "taskNotFound": "Эта задача не найдена или принадлежит другому пользователю."
   },
   "templates": {
     "planReady": "Твой маршрут готов: {summary}",
     "task": "Задание {number}: {title}\n\n{description}",
+    "taskCard": "{title}\n\n{description}\n\nСтатус: {status}",
     "progress": "{petName} получает {xpAdded} XP. Всего: {totalXp} XP.",
     "levelUp": "🌟 {petName} достиг уровня {level}! Новая форма пробуждена!",
     "petText": "🐾 {petName} · уровень {level} · {xp} XP"

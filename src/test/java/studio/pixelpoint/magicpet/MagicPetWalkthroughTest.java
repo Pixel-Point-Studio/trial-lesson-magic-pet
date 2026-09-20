@@ -6,15 +6,21 @@ import studio.pixelpoint.magicpet.application.IncomingMessage;
 import studio.pixelpoint.magicpet.application.PetFacade;
 import studio.pixelpoint.magicpet.application.UiTexts;
 import studio.pixelpoint.magicpet.application.port.AssetCatalog;
+import studio.pixelpoint.magicpet.application.port.PlanGenerator;
 import studio.pixelpoint.magicpet.domain.UserSession;
 import studio.pixelpoint.magicpet.domain.UserState;
 import studio.pixelpoint.magicpet.infrastructure.plan.FallbackPlanGenerator;
+import studio.pixelpoint.magicpet.infrastructure.plan.AiProxyPlanGenerator;
+import studio.pixelpoint.magicpet.infrastructure.plan.ResilientPlanGenerator;
 import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteDatabase;
 import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteUserStore;
 import studio.pixelpoint.magicpet.lesson.StudentBot;
 
 import java.util.Optional;
 import java.nio.file.Path;
+import java.net.ServerSocket;
+import java.net.URI;
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,11 +28,17 @@ class MagicPetWalkthroughTest {
     @TempDir Path tempDir;
 
     @Test
-    void fakeUserCompletesTwoTasksAndReachesLevelTwoExactlyOnce() {
+    void fakeUserCompletesTwoTasksAndReachesLevelTwoExactlyOnceWhileAiIsOffline() throws Exception {
         FakeTelegramGateway telegram = new FakeTelegramGateway();
         SqliteUserStore users = new SqliteUserStore(SqliteDatabase.migrate(tempDir.resolve("walkthrough.db")));
         AssetCatalog noAssets = (scenario, level) -> Optional.empty();
-        PetFacade facade = new PetFacade(telegram, users, new FallbackPlanGenerator(), noAssets, UiTexts.load());
+        int closedPort;
+        try (ServerSocket socket = new ServerSocket(0)) { closedPort = socket.getLocalPort(); }
+        PlanGenerator plans = new ResilientPlanGenerator(
+                new AiProxyPlanGenerator(URI.create("http://127.0.0.1:" + closedPort + "/plan"),
+                        "secret", "model", Duration.ofMillis(100)),
+                new FallbackPlanGenerator());
+        PetFacade facade = new PetFacade(telegram, users, plans, noAssets, UiTexts.load());
         StudentBot bot = new StudentBot(facade);
         long userId = 42L;
 
@@ -46,6 +58,7 @@ class MagicPetWalkthroughTest {
         assertEquals(50, users.getOrCreate(userId, "Аня").experience(),
                 "повторная доставка callback не должна начислять XP");
         bot.receiveMessage(button(userId, "action:task_done", "done-2"));
+        bot.receiveMessage(button(userId, "action:task_done", "done-1"));
 
         session = users.getOrCreate(userId, "Аня");
         assertEquals(100, session.experience());

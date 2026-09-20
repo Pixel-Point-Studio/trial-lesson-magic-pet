@@ -7,6 +7,10 @@ import studio.pixelpoint.magicpet.application.PetFacade;
 import studio.pixelpoint.magicpet.application.UiTexts;
 import studio.pixelpoint.magicpet.application.port.AssetCatalog;
 import studio.pixelpoint.magicpet.domain.UserState;
+import studio.pixelpoint.magicpet.domain.GeneratedPlan;
+import studio.pixelpoint.magicpet.domain.PlanSource;
+import studio.pixelpoint.magicpet.domain.PlanTask;
+import studio.pixelpoint.magicpet.domain.Scenario;
 import studio.pixelpoint.magicpet.infrastructure.plan.FallbackPlanGenerator;
 import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteDatabase;
 import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteUserStore;
@@ -15,6 +19,7 @@ import studio.pixelpoint.magicpet.lesson.StudentBot;
 import java.nio.file.Path;
 import java.sql.DriverManager;
 import java.util.Optional;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,12 +32,13 @@ class SqliteUserStoreIntegrationTest {
         try (var connection = DriverManager.getConnection(url);
              var statement = connection.prepareStatement("""
                      SELECT name FROM sqlite_master
-                     WHERE type = 'table' AND name IN ('users', 'pets', 'goals', 'tasks', 'flyway_schema_history')
+                     WHERE type = 'table' AND name IN
+                         ('users', 'pets', 'goals', 'tasks', 'processed_deliveries', 'flyway_schema_history')
                      """);
              var result = statement.executeQuery()) {
             int count = 0;
             while (result.next()) count++;
-            assertEquals(5, count);
+            assertEquals(6, count);
         }
     }
 
@@ -82,6 +88,27 @@ class SqliteUserStoreIntegrationTest {
         assertEquals(0, second.experience());
         assertEquals(0, second.currentTaskIndex());
         assertEquals("Фокс", second.petName());
+    }
+
+    @Test
+    void aiSourceIsStoredAndRestoredWithTasks() {
+        String url = SqliteDatabase.migrate(tempDir.resolve("source.db"));
+        SqliteUserStore store = new SqliteUserStore(url);
+        var user = store.getOrCreate(303, "AI user");
+        user.begin();
+        store.save(user);
+        user.chooseScenario(Scenario.STUDY);
+        store.save(user);
+        user.namePet("Руно");
+        store.save(user);
+        user.activatePlan("Изучить Java", new GeneratedPlan("AI route", List.of(
+                new PlanTask("1", "a", PlanSource.AI),
+                new PlanTask("2", "b", PlanSource.AI),
+                new PlanTask("3", "c", PlanSource.AI))));
+        store.save(user);
+
+        var restored = new SqliteUserStore(url).getOrCreate(303, "AI user");
+        assertTrue(restored.tasks().stream().allMatch(task -> task.source() == PlanSource.AI));
     }
 
     private StudentBot bot(SqliteUserStore store, FakeTelegramGateway telegram) {

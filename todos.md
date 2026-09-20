@@ -2,9 +2,9 @@
 
 - [x] Walkthrough 1 — сквозной работающий бот
 - [x] Walkthrough 2 — SQLite и сохранение состояния
-- [ ] Walkthrough 3 — полноценные ассеты питомцев
-- [ ] Walkthrough 4 — AI-план и гарантированный fallback
-- [ ] Walkthrough 5 — управление задачами
+- [x] Walkthrough 3 — полноценные ассеты питомцев
+- [x] Walkthrough 4 — AI-план и гарантированный fallback
+- [x] Walkthrough 5 — управление задачами
 - [ ] Walkthrough 6 — устойчивость и эксплуатационная безопасность
 - [ ] Walkthrough 7 — учебная поверхность
 - [ ] Walkthrough 8 — подготовка нового занятия

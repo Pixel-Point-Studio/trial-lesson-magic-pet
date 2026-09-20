@@ -7,7 +7,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public record AppConfig(String telegramBotToken, Path assetDirectory, Path databasePath) {
+public record AppConfig(
+        String telegramBotToken,
+        Path assetDirectory,
+        Path databasePath,
+        String llmApiUrl,
+        String llmApiKey,
+        String llmModel,
+        int llmTimeoutMillis
+) {
     public static AppConfig load(Path workingDirectory) {
         Map<String, String> values = new HashMap<>();
         Path envFile = workingDirectory.resolve(".env");
@@ -26,7 +34,11 @@ public record AppConfig(String telegramBotToken, Path assetDirectory, Path datab
         }
         Path assets = workingDirectory.resolve(values.getOrDefault("ASSET_DIRECTORY", "./assets")).normalize();
         Path database = workingDirectory.resolve(values.getOrDefault("DATABASE_PATH", "./data/magic-pet.db")).normalize();
-        return new AppConfig(token, assets, database);
+        int timeout = positiveInt(values.getOrDefault("LLM_TIMEOUT_MS", "5000"), "LLM_TIMEOUT_MS");
+        return new AppConfig(token, assets, database,
+                values.getOrDefault("LLM_API_URL", "").trim(),
+                values.getOrDefault("LLM_API_KEY", "").trim(),
+                values.getOrDefault("LLM_MODEL", "").trim(), timeout);
     }
 
     private static void parse(List<String> lines, Map<String, String> target) {
@@ -40,6 +52,16 @@ public record AppConfig(String telegramBotToken, Path assetDirectory, Path datab
                 value = value.substring(1, value.length() - 1);
             }
             target.put(line.substring(0, separator).trim(), value);
+        }
+    }
+
+    private static int positiveInt(String raw, String name) {
+        try {
+            int value = Integer.parseInt(raw.trim());
+            if (value <= 0) throw new NumberFormatException();
+            return value;
+        } catch (NumberFormatException error) {
+            throw new IllegalStateException(name + " должен быть положительным целым числом");
         }
     }
 }

@@ -12,10 +12,13 @@ public final class UiTexts {
 
     private UiTexts(JsonNode root) {
         this.root = root;
-        require("buttons", "scenarioStudy", "scenarioSport", "scenarioBlog", "taskDone");
+        require("buttons", "scenarioStudy", "scenarioSport", "scenarioBlog", "taskDone",
+                "myTasks", "addTask", "completedTasks", "deleteTask", "back");
         require("messages", "chooseScenario", "askPetName", "askGoal", "fallbackPlanUsed",
-                "invalidName", "invalidGoal", "alreadyCompleted", "planCompleted");
-        require("templates", "planReady", "task", "progress", "levelUp", "petText");
+                "invalidName", "invalidGoal", "alreadyCompleted", "planCompleted", "activeTasks",
+                "completedTasks", "noActiveTasks", "noCompletedTasks", "askTaskTitle", "askTaskDescription",
+                "invalidTaskTitle", "invalidTaskDescription", "taskAdded", "taskDeleted", "taskNotFound");
+        require("templates", "planReady", "task", "taskCard", "progress", "levelUp", "petText");
     }
 
     public static UiTexts load() {
