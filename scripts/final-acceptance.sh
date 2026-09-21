@@ -18,21 +18,20 @@ echo "[2/4] Lesson worktree isolation"
 echo "[3/4] Documentation"
 for file in \
   README.md \
-  lesson-scenario.md \
-  lesson/README.md \
-  lesson/instructor/answers.md \
   .run/Magic_Pet.run.xml \
   acceptance/SMOKE-CHECKLIST.md \
-  acceptance/SETUP-AND-RECOVERY.md \
-  acceptance/TEACHER-THEORY.md \
   acceptance/PILOT-REPORT.md; do
   [[ -s "$file" ]] || { echo "ACCEPTANCE ERROR: отсутствует $file" >&2; exit 1; }
 done
 
 grep -q '<option value="run" />' .run/Magic_Pet.run.xml \
   || { echo "ACCEPTANCE ERROR: IntelliJ-конфигурация не запускает Gradle task run" >&2; exit 1; }
-[[ "$(find lesson/issues -name '*.md' | wc -l | tr -d ' ')" == "12" ]] \
-  || { echo "ACCEPTANCE ERROR: ожидаются 12 студенческих issue-карточек" >&2; exit 1; }
+[[ "$(find lesson/patches -name '*.patch' | wc -l | tr -d ' ')" == "3" ]] \
+  || { echo "ACCEPTANCE ERROR: ожидаются три route patch-файла" >&2; exit 1; }
+grep -q 'github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues' README.md \
+  || { echo "ACCEPTANCE ERROR: README не ведёт к GitHub Issues" >&2; exit 1; }
+grep -q 'notion.so/3e16ba2ce4e8801a9c67c1830814439b' README.md \
+  || { echo "ACCEPTANCE ERROR: README не ведёт к методичке МОПа" >&2; exit 1; }
 
 echo "[4/4] Student surface"
 student_file="src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java"

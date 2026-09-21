@@ -42,12 +42,27 @@ for route in study sport blog; do
   grep -qx 'TELEGRAM_BOT_TOKEN=replace_me' "$path/.env"
   [[ -d "$path/data" && -z "$(find "$path/data" -mindepth 1 -print -quit)" ]] \
     || { echo "ERROR: data не является пустым" >&2; exit 1; }
+  [[ -z "$(git -C "$path" status --porcelain --untracked-files=normal)" ]] \
+    || { echo "ERROR: подготовленное окружение должно начинаться с чистого git status" >&2; exit 1; }
+  [[ "$(git -C "$path" rev-list --count main..HEAD)" == "1" ]] \
+    || { echo "ERROR: учебный backlog должен быть отдельным стартовым commit" >&2; exit 1; }
   [[ "$(grep -R 'TODO STUDENT' "$path/src/main/java" | wc -l | tr -d ' ')" == "4" ]]
+  [[ "$(printf '%s\n' "$output" | grep -c 'github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/')" == "4" ]]
+  printf '%s\n' "$output" | grep -q 'Методичка МОПа: https://www.notion.so/3e16ba2ce4e8801a9c67c1830814439b'
 
   case "$route" in
-    study) grep -q 'selectScenario(user, Scenario.SPORT)' "$path/src/main/java/studio/pixelpoint/magicpet/lesson/route/StudyLesson.java" ;;
-    sport) grep -q 'experience > 100' "$path/src/main/java/studio/pixelpoint/magicpet/domain/LevelProgression.java" ;;
-    blog) grep -q 'pet.completeTask(user, taskId' "$path/src/main/java/studio/pixelpoint/magicpet/lesson/route/BlogLesson.java" ;;
+    study)
+      grep -q 'selectScenario(user, Scenario.SPORT)' "$path/src/main/java/studio/pixelpoint/magicpet/lesson/route/StudyLesson.java"
+      printf '%s\n' "$output" | grep -q 'рекомендуются задачи 01 и 03'
+      ;;
+    sport)
+      grep -q 'experience > 100' "$path/src/main/java/studio/pixelpoint/magicpet/domain/LevelProgression.java"
+      printf '%s\n' "$output" | grep -q 'рекомендуются задачи 01 и 03'
+      ;;
+    blog)
+      grep -q 'pet.completeTask(user, taskId' "$path/src/main/java/studio/pixelpoint/magicpet/lesson/route/BlogLesson.java"
+      printf '%s\n' "$output" | grep -q 'рекомендуются задачи 01 и 04'
+      ;;
   esac
 
   if [[ $index -eq 1 ]]; then

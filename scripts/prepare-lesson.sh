@@ -67,6 +67,14 @@ git -C "$target" apply "lesson/patches/$route.patch"
 
 (cd "$target" && ./scripts/preflight.sh --prepared "$route")
 
+# The prepared backlog is the student's clean starting point. Committing it here
+# keeps the first `git status` empty and makes `git diff` show only student work.
+git -C "$target" add -u
+git -C "$target" \
+  -c user.name="Pixel Point Lesson" \
+  -c user.email="lesson@pixelpoint.local" \
+  commit -m "Prepare $route lesson backlog" --quiet
+
 case "$route" in
   study) pet_name="Руни" ;;
   sport) pet_name="Игнис" ;;
@@ -82,9 +90,32 @@ echo "LESSON_BRANCH=$branch"
 echo "LESSON_ROUTE=$route"
 echo "LESSON_PET=$pet_name"
 echo "LESSON_ISSUES:"
-find "$target/lesson/issues/$route" -maxdepth 1 -name '*.md' -print | sort
+case "$route" in
+  study)
+    echo "01 BUG      https://github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/5"
+    echo "02 BUG      https://github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/10"
+    echo "03 FEATURE  https://github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/8"
+    echo "04 FEATURE  https://github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/11"
+    recommendation="01 и 03"
+    ;;
+  sport)
+    echo "01 BUG      https://github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/4"
+    echo "02 BUG      https://github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/12"
+    echo "03 FEATURE  https://github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/9"
+    echo "04 FEATURE  https://github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/13"
+    recommendation="01 и 03"
+    ;;
+  blog)
+    echo "01 BUG      https://github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/14"
+    echo "02 BUG      https://github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/3"
+    echo "03 FEATURE  https://github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/7"
+    echo "04 FEATURE  https://github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/15"
+    recommendation="01 и 04"
+    ;;
+esac
 echo
 echo "Откройте LESSON_PATH в IntelliJ IDEA."
-echo "Для урока рекомендуются задачи 01 и 03; остальные остаются backlog."
+echo "Для урока рекомендуются задачи $recommendation; остальные остаются backlog."
 echo "Заполните только TELEGRAM_BOT_TOKEN в $target/.env."
+echo "Методичка МОПа: https://www.notion.so/3e16ba2ce4e8801a9c67c1830814439b"
 echo "После урока остановите приложение, отзовите/ротируйте школьный токен и удалите worktree."
