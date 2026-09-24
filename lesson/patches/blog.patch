@@ -1,17 +1,18 @@
 diff --git a/src/main/java/studio/pixelpoint/magicpet/lesson/route/BlogLesson.java b/src/main/java/studio/pixelpoint/magicpet/lesson/route/BlogLesson.java
-index 84417dc..03721d2 100644
 --- a/src/main/java/studio/pixelpoint/magicpet/lesson/route/BlogLesson.java
 +++ b/src/main/java/studio/pixelpoint/magicpet/lesson/route/BlogLesson.java
-@@ -19,31 +19,31 @@ public final class BlogLesson implements LessonRoute {
- 
+@@ -20,7 +20,7 @@ public final class BlogLesson implements LessonRoute {
+     // ISSUE B3 — кнопка «Подсказка»
      // ISSUE B4 — кнопка «Весь план»
      @Override public List<Button> taskButtons() {
--        return List.of(new Button("action:show_plan", "🗺 Весь план"));
+-        return List.of(
+-                new Button("action:hint", "💡 Подсказка"),
+-                new Button("action:show_plan", "🗺 Весь план"));
++        // TODO STUDENT B3: добавь кнопку подсказки и её обработчик ниже.
 +        // TODO STUDENT B4: добавь кнопку «Весь план» и её обработчик ниже.
 +        return List.of();
      }
- 
-     @Override public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
+@@ -29,22 +29,15 @@ public final class BlogLesson implements LessonRoute {
          // ISSUE B1 — «Мои задачи» показывает только активные
          if (message.buttonPressed("action:my_tasks")) {
 -            if (StudentBot.journeyReady(user)) pet.showTasks(user, false); else pet.repeatPrompt(user);
@@ -20,17 +21,13 @@ index 84417dc..03721d2 100644
              return true;
          }
  
-         // ISSUE B3 — удаление сначала просит подтверждение
-         Long taskId = StudentBot.callbackId(message.buttonId(), "task:confirm_delete:");
-         if (taskId != null) {
--            pet.confirmTaskDeletion(user, taskId);
-+            // TODO STUDENT B3: сначала покажи вопрос с кнопками «Да» и «Нет».
-+            pet.deleteTask(user, taskId);
-             return true;
-         }
- 
+-        if (message.buttonPressed("action:hint")) {
+-            pet.showHint(user);
+-            return true;
+-        }
+-
          // ISSUE B2 — подтверждённое удаление не выполняет задачу и не начисляет XP
-         taskId = StudentBot.callbackId(message.buttonId(), "task:delete:");
+         Long taskId = StudentBot.callbackId(message.buttonId(), "task:delete:");
          if (taskId != null) {
 -            pet.deleteTask(user, taskId);
 -            return true;

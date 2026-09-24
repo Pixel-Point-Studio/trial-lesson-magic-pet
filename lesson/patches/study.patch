@@ -1,14 +1,16 @@
 diff --git a/src/main/java/studio/pixelpoint/magicpet/lesson/route/StudyLesson.java b/src/main/java/studio/pixelpoint/magicpet/lesson/route/StudyLesson.java
-index aee93f8..f1b4f4f 100644
 --- a/src/main/java/studio/pixelpoint/magicpet/lesson/route/StudyLesson.java
 +++ b/src/main/java/studio/pixelpoint/magicpet/lesson/route/StudyLesson.java
-@@ -13,39 +13,31 @@ public final class StudyLesson implements LessonRoute {
+@@ -11,42 +11,34 @@ public final class StudyLesson implements LessonRoute {
+     @Override public Scenario scenario() { return Scenario.STUDY; }
+-    @Override public Scenario displayedPetScenario() { return Scenario.STUDY; }
++    // TODO STUDENT S1: проверь, изображение какого Pet показывается после создания плана.
++    @Override public Scenario displayedPetScenario() { return Scenario.SPORT; }
+     @Override public boolean selectionPressed(IncomingMessage message) { return message.buttonPressed("scenario:study"); }
  
      // ISSUE S1 — после выбора появляется другой Pet
      @Override public void select(PetFacade pet, UserSession user) {
--        if (user.state() == UserState.CHOOSING_SCENARIO) pet.selectScenario(user, Scenario.STUDY);
-+        // TODO STUDENT S1: проверь, какого Pet выбирает этот аргумент.
-+        if (user.state() == UserState.CHOOSING_SCENARIO) pet.selectScenario(user, Scenario.SPORT);
+         if (user.state() == UserState.CHOOSING_SCENARIO) pet.selectScenario(user, Scenario.STUDY);
          else pet.repeatPrompt(user);
      }
  

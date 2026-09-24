@@ -9,6 +9,7 @@ import java.util.List;
 
 public final class StudyLesson implements LessonRoute {
     @Override public Scenario scenario() { return Scenario.STUDY; }
+    @Override public Scenario displayedPetScenario() { return Scenario.STUDY; }
     @Override public boolean selectionPressed(IncomingMessage message) { return message.buttonPressed("scenario:study"); }
 
     // ISSUE S1 — после выбора появляется другой Pet

@@ -4,6 +4,7 @@ import studio.pixelpoint.magicpet.application.Button;
 import studio.pixelpoint.magicpet.application.IncomingMessage;
 import studio.pixelpoint.magicpet.application.PetFacade;
 import studio.pixelpoint.magicpet.domain.*;
+import studio.pixelpoint.magicpet.lesson.StudentBot;
 
 import java.util.List;
 
@@ -17,17 +18,16 @@ public final class SportLesson implements LessonRoute {
     @Override public void acceptPetName(PetFacade pet, UserSession user, String name) { pet.namePet(user, name); }
 
     // ISSUE I1 — граница уровня находится в LevelProgression.levelFor
-    // ISSUE I3 — кнопка «Подсказка»
+    // ISSUE I3 — удаление сначала просит подтверждение
     // ISSUE I4 — кнопка «До следующего уровня»
     @Override public List<Button> taskButtons() {
-        return List.of(
-                new Button("action:hint", "💡 Подсказка"),
-                new Button("action:level_progress", "📈 До следующего уровня"));
+        return List.of(new Button("action:level_progress", "📈 До следующего уровня"));
     }
 
     @Override public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
-        if (message.buttonPressed("action:hint")) {
-            pet.showHint(user);
+        Long taskId = StudentBot.callbackId(message.buttonId(), "task:confirm_delete:");
+        if (taskId != null) {
+            pet.confirmTaskDeletion(user, taskId);
             return true;
         }
         if (message.buttonPressed("action:level_progress")) {

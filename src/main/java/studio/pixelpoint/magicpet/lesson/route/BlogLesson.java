@@ -17,9 +17,12 @@ public final class BlogLesson implements LessonRoute {
     }
     @Override public void acceptPetName(PetFacade pet, UserSession user, String name) { pet.namePet(user, name); }
 
+    // ISSUE B3 — кнопка «Подсказка»
     // ISSUE B4 — кнопка «Весь план»
     @Override public List<Button> taskButtons() {
-        return List.of(new Button("action:show_plan", "🗺 Весь план"));
+        return List.of(
+                new Button("action:hint", "💡 Подсказка"),
+                new Button("action:show_plan", "🗺 Весь план"));
     }
 
     @Override public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
@@ -29,15 +32,13 @@ public final class BlogLesson implements LessonRoute {
             return true;
         }
 
-        // ISSUE B3 — удаление сначала просит подтверждение
-        Long taskId = StudentBot.callbackId(message.buttonId(), "task:confirm_delete:");
-        if (taskId != null) {
-            pet.confirmTaskDeletion(user, taskId);
+        if (message.buttonPressed("action:hint")) {
+            pet.showHint(user);
             return true;
         }
 
         // ISSUE B2 — подтверждённое удаление не выполняет задачу и не начисляет XP
-        taskId = StudentBot.callbackId(message.buttonId(), "task:delete:");
+        Long taskId = StudentBot.callbackId(message.buttonId(), "task:delete:");
         if (taskId != null) {
             pet.deleteTask(user, taskId);
             return true;

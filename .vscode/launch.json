@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Magic Pet: запустить и отлаживать",
+      "request": "launch",
+      "mainClass": "studio.pixelpoint.magicpet.MagicPetApplication",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "vmArgs": "--enable-native-access=ALL-UNNAMED"
+    }
+  ]
+}

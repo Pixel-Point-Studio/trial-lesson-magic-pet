@@ -11,6 +11,7 @@ import java.util.List;
 
 public interface LessonRoute {
     Scenario scenario();
+    default Scenario displayedPetScenario() { return scenario(); }
     boolean selectionPressed(IncomingMessage message);
     void select(PetFacade pet, UserSession user);
     void acceptPetName(PetFacade pet, UserSession user, String name);

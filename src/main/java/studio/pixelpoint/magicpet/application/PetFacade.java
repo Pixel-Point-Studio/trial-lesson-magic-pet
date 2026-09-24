@@ -59,6 +59,10 @@ public final class PetFacade {
     }
 
     public boolean createPlan(UserSession user, String goalText) {
+        return createPlan(user, goalText, user.scenario());
+    }
+
+    public boolean createPlan(UserSession user, String goalText, Scenario displayedPetScenario) {
         String clean = clean(goalText);
         if (clean.isBlank() || clean.length() > 500) {
             telegram.sendText(user.userId(), texts.message("invalidGoal"));
@@ -71,7 +75,7 @@ public final class PetFacade {
             telegram.sendText(user.userId(), texts.message("fallbackPlanUsed"));
         }
         telegram.sendText(user.userId(), texts.template("planReady", Map.of("summary", plan.summary())));
-        showPet(user);
+        showPet(user, displayedPetScenario, user.level());
         showCurrentTask(user);
         return true;
     }
@@ -210,9 +214,13 @@ public final class PetFacade {
     }
 
     public void showPet(UserSession user, int displayedLevel) {
+        showPet(user, user.scenario(), displayedLevel);
+    }
+
+    private void showPet(UserSession user, Scenario displayedScenario, int displayedLevel) {
         String caption = texts.template("petText", Map.of(
                 "petName", user.petName(), "level", displayedLevel, "xp", user.experience()));
-        assets.find(user.scenario(), displayedLevel)
+        assets.find(displayedScenario, displayedLevel)
                 .ifPresentOrElse(path -> telegram.sendPhoto(user.userId(), path, caption),
                         () -> telegram.sendText(user.userId(), caption));
     }

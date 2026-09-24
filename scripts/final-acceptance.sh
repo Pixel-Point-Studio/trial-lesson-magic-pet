@@ -1,39 +1,47 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Полная служебная приёмка для владельца проекта.
+# МОП не должен запускать её перед каждым занятием.
+
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo_root"
 
 [[ "$(git branch --show-current)" == "main" ]] \
-  || { echo "ACCEPTANCE ERROR: проверка запускается из main" >&2; exit 1; }
+  || { echo "ОШИБКА ПРИЁМКИ: полная проверка запускается только из main" >&2; exit 1; }
 [[ -z "$(git status --porcelain --untracked-files=normal)" ]] \
-  || { echo "ACCEPTANCE ERROR: для финальной приёмки нужен чистый commit" >&2; exit 1; }
+  || { echo "ОШИБКА ПРИЁМКИ: сначала сохраните все изменения проекта" >&2; exit 1; }
 
-echo "[1/4] Product preflight"
+echo "Служебная проверка для владельца проекта. МОПу запускать её не нужно."
+echo "[1/4] Проверяю сборку, тесты и файлы проекта"
 ./scripts/preflight.sh
 
-echo "[2/4] Lesson worktree isolation"
+echo "[2/4] Проверяю создание отдельных папок для трёх студентов"
 ./scripts/test-prepare-lesson.sh
 
-echo "[3/4] Documentation"
+echo "[3/4] Проверяю инструкции и настройки редактора"
 for file in \
   README.md \
-  .run/Magic_Pet.run.xml \
+  .vscode/extensions.json \
+  .vscode/launch.json \
+  .vscode/tasks.json \
   acceptance/SMOKE-CHECKLIST.md \
   acceptance/PILOT-REPORT.md; do
-  [[ -s "$file" ]] || { echo "ACCEPTANCE ERROR: отсутствует $file" >&2; exit 1; }
+  [[ -s "$file" ]] || { echo "ОШИБКА ПРИЁМКИ: отсутствует $file" >&2; exit 1; }
 done
 
-grep -q '<option value="run" />' .run/Magic_Pet.run.xml \
-  || { echo "ACCEPTANCE ERROR: IntelliJ-конфигурация не запускает Gradle task run" >&2; exit 1; }
+grep -q 'Magic Pet: запустить и отлаживать' .vscode/launch.json \
+  || { echo "ОШИБКА ПРИЁМКИ: в VS Code нет готового запуска с отладкой" >&2; exit 1; }
+grep -q 'Magic Pet: запустить бота' .vscode/tasks.json \
+  || { echo "ОШИБКА ПРИЁМКИ: в VS Code нет готовой команды запуска" >&2; exit 1; }
 [[ "$(find lesson/patches -name '*.patch' | wc -l | tr -d ' ')" == "3" ]] \
-  || { echo "ACCEPTANCE ERROR: ожидаются три route patch-файла" >&2; exit 1; }
+  || { echo "ОШИБКА ПРИЁМКИ: должны существовать три набора учебных заданий" >&2; exit 1; }
 grep -q 'github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues' README.md \
-  || { echo "ACCEPTANCE ERROR: README не ведёт к GitHub Issues" >&2; exit 1; }
+  || { echo "ОШИБКА ПРИЁМКИ: README не ведёт к списку заданий на GitHub" >&2; exit 1; }
 grep -q 'notion.so/3e16ba2ce4e8801a9c67c1830814439b' README.md \
-  || { echo "ACCEPTANCE ERROR: README не ведёт к методичке МОПа" >&2; exit 1; }
+  || { echo "ОШИБКА ПРИЁМКИ: README не ведёт к методичке МОПа" >&2; exit 1; }
 
-echo "[4/4] Student surface"
+echo "[4/4] Проверяю, что студент видит только простой учебный код"
 student_file="src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java"
 ! grep -Eq 'telegrambots|java\.sql|java\.net\.http|jackson|infrastructure\.' "$student_file"
 [[ "$(grep -c 'TODO' "$student_file" || true)" -le 4 ]]
@@ -43,8 +51,8 @@ for route_file in src/main/java/studio/pixelpoint/magicpet/lesson/route/*Lesson.
 done
 
 echo
-echo "AUTOMATED ACCEPTANCE OK"
-echo "Manual sign-off is still required in acceptance/PILOT-REPORT.md:"
-echo "- real Telegram token and /start response under 30 seconds"
-echo "- 35–40 minute novice practice for each selected route"
-echo "- full 90-minute lesson and fallback-token switch under 2 minutes"
+echo "✅ АВТОМАТИЧЕСКАЯ ПРОВЕРКА ПРОЙДЕНА"
+echo "Владельцу проекта осталось вручную заполнить acceptance/PILOT-REPORT.md:"
+echo "- проверить настоящего Telegram-бота;"
+echo "- пройти практику новичком по каждой теме;"
+echo "- провести полный урок и проверить замену запасного токена."

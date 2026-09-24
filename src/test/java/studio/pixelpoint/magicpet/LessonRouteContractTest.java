@@ -1,5 +1,6 @@
 package studio.pixelpoint.magicpet;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import studio.pixelpoint.magicpet.application.*;
@@ -25,6 +26,10 @@ class LessonRouteContractTest {
         Harness h = memoryHarness();
         startAndSelect(h, 1, "study");
         assertEquals(Scenario.STUDY, h.users.getOrCreate(1, "Ученик").scenario());
+        h.bot.receiveMessage(text(1, "Руни", "name"));
+        h.bot.receiveMessage(text(1, "Подготовиться к экзамену", "goal"));
+        assertTrue(h.telegram.sent().stream().anyMatch(item ->
+                Path.of("study", "level-1.png").equals(item.path())));
     }
 
     @Test void studySavesCustomName() {
@@ -69,20 +74,28 @@ class LessonRouteContractTest {
 
     @Test void sportShowsCurrentLevelImage() {
         Harness h = active(memoryHarness(), 5, "sport");
+        for (int index = 0; index < 4; index++) {
+            long task = h.users.addCustomTask(5, "Разминка " + index, "Описание");
+            h.users.completeTask(5, task, "seed-" + index);
+        }
         h.bot.receiveMessage(button(5, "action:task_done", "done-1"));
-        h.bot.receiveMessage(button(5, "action:task_done", "done-2"));
         assertTrue(h.telegram.sent().stream().anyMatch(item ->
-                Path.of("sport", "level-2.png").equals(item.path())));
+                Path.of("sport", "level-3.png").equals(item.path())));
     }
 
-    @Test void sportShowsHint() {
+    @Test
+    @DisplayName("I3: Спорт просит подтверждение перед удалением")
+    void sportConfirmsDeletion() {
         Harness h = active(memoryHarness(), 6, "sport");
-        int before = h.users.getOrCreate(6, "Ученик").experience();
-        int taskBefore = h.users.getOrCreate(6, "Ученик").currentTaskIndex();
-        h.bot.receiveMessage(button(6, "action:hint", "hint"));
-        assertTrue(h.telegram.sent().getLast().text().startsWith("💡"));
-        assertEquals(before, h.users.getOrCreate(6, "Ученик").experience());
-        assertEquals(taskBefore, h.users.getOrCreate(6, "Ученик").currentTaskIndex());
+        long task = h.users.addCustomTask(6, "Тренировка", "Описание");
+        h.bot.receiveMessage(button(6, "task:confirm_delete:" + task, "ask"));
+        assertTrue(h.users.findTask(6, task).isPresent());
+        assertEquals(2, h.telegram.sent().getLast().buttons().size());
+        h.bot.receiveMessage(button(6, "task:open:" + task, "no"));
+        assertTrue(h.users.findTask(6, task).isPresent());
+        h.bot.receiveMessage(button(6, "task:delete:" + task, "yes"));
+        assertTrue(h.users.findTask(6, task).isEmpty());
+        assertEquals(0, h.users.getOrCreate(6, "Ученик").experience());
     }
 
     @Test void sportShowsLevelProgress() {
@@ -114,17 +127,27 @@ class LessonRouteContractTest {
         assertEquals(0, h.users.getOrCreate(9, "Ученик").experience());
     }
 
-    @Test void blogConfirmsDeletion() {
+    @Test
+    @DisplayName("B3: Блог показывает подсказку к текущей задаче")
+    void blogShowsHint() {
         Harness h = active(memoryHarness(), 10, "blog");
-        long task = h.users.addCustomTask(10, "Черновик", "Описание");
-        h.bot.receiveMessage(button(10, "task:confirm_delete:" + task, "ask"));
-        assertTrue(h.users.findTask(10, task).isPresent());
+        int before = h.users.getOrCreate(10, "Ученик").experience();
+        int taskBefore = h.users.getOrCreate(10, "Ученик").currentTaskIndex();
+        h.bot.receiveMessage(button(10, "action:hint", "hint"));
+        assertTrue(h.telegram.sent().getLast().text().startsWith("💡"));
+        assertEquals(before, h.users.getOrCreate(10, "Ученик").experience());
+        assertEquals(taskBefore, h.users.getOrCreate(10, "Ученик").currentTaskIndex());
+    }
+
+    @Test void genericDeleteConfirmationWorksOutsideSport() {
+        Harness h = active(memoryHarness(), 12, "study");
+        long task = h.users.addCustomTask(12, "Конспект", "Описание");
+        h.bot.receiveMessage(button(12, "task:confirm_delete:" + task, "ask"));
+        assertTrue(h.users.findTask(12, task).isPresent());
         assertEquals(2, h.telegram.sent().getLast().buttons().size());
-        h.bot.receiveMessage(button(10, "task:open:" + task, "no"));
-        assertTrue(h.users.findTask(10, task).isPresent());
-        h.bot.receiveMessage(button(10, "task:delete:" + task, "yes"));
-        assertTrue(h.users.findTask(10, task).isEmpty());
-        assertEquals(0, h.users.getOrCreate(10, "Ученик").experience());
+        h.bot.receiveMessage(button(12, "task:delete:" + task, "yes"));
+        assertTrue(h.users.findTask(12, task).isEmpty());
+        assertEquals(0, h.users.getOrCreate(12, "Ученик").experience());
     }
 
     @Test void blogShowsFullPlan() {

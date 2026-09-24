@@ -26,6 +26,7 @@ replay_pid*
 
 # Local secrets and build output
 .env
+.env.lesson-secrets
 .gradle/
 build/
 data/

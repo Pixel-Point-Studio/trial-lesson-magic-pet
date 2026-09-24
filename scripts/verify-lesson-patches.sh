@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Служебная проверка учебных наборов для владельца проекта.
+# МОПу этот файл запускать не нужно.
+
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 temp_root="$(mktemp -d "${TMPDIR:-/tmp}/magic-pet-lesson-check.XXXXXX")"
 trap 'rm -rf "$temp_root"' EXIT
@@ -19,9 +22,9 @@ for route in study sport blog; do
   patch="lesson/patches/$route.patch"
   test_pattern="*LessonRouteContractTest.${route}*"
   case "$route" in
-    study) tests=(studyWrongPet studySavesCustomName studyShowsPet studyRenamesPet) ;;
-    sport) tests=(sportLevelsAtOneHundred sportShowsCurrentLevelImage sportShowsHint sportShowsLevelProgress) ;;
-    blog) tests=(blogShowsActiveTasks blogDeletesWithoutXp blogConfirmsDeletion blogShowsFullPlan) ;;
+    study) route_name="Учёба"; tests=(studyWrongPet studySavesCustomName studyShowsPet studyRenamesPet) ;;
+    sport) route_name="Спорт"; tests=(sportLevelsAtOneHundred sportShowsCurrentLevelImage sportConfirmsDeletion sportShowsLevelProgress) ;;
+    blog) route_name="Личный блог"; tests=(blogShowsActiveTasks blogDeletesWithoutXp blogShowsHint blogShowsFullPlan) ;;
   esac
 
   git apply --check "$patch"
@@ -30,7 +33,7 @@ for route in study sport blog; do
 
   todo_count="$(grep -R 'TODO STUDENT' src/main/java | wc -l | tr -d ' ')"
   if [[ "$todo_count" != "4" ]]; then
-    echo "Ошибка: patch $route должен создавать ровно четыре TODO STUDENT" >&2
+    echo "ОШИБКА: тема «${route_name}» должна содержать ровно четыре задания для студента." >&2
     exit 1
   fi
 
@@ -41,7 +44,7 @@ for route in study sport blog; do
     defect_result=$?
     set -e
     if [[ $defect_result -eq 0 ]]; then
-      echo "Ошибка: учебная задача $test_name не воспроизводится" >&2
+      echo "ОШИБКА: одна из задач темы «${route_name}» не воспроизводится: $test_name" >&2
       exit 1
     fi
   done
@@ -49,5 +52,5 @@ for route in study sport blog; do
   git apply --reverse "$patch"
   GRADLE_USER_HOME="${GRADLE_USER_HOME:-$temp_root/.gradle-check}" \
     ./gradlew test --tests "$test_pattern" --quiet
-  echo "OK: $route"
+  echo "✅ Тема «${route_name}»: все четыре задания воспроизводятся и имеют решения."
 done

@@ -45,6 +45,12 @@ public final class StudentBot {
         if (route != null && route.handleText(pet, user, message)) return;
         if (route != null && route.handleButton(pet, user, message)) return;
 
+        Long taskId = callbackId(message.buttonId(), "task:confirm_delete:");
+        if (taskId != null) {
+            if (journeyReady(user)) pet.confirmTaskDeletion(user, taskId); else repeat(user);
+            return;
+        }
+
         if (message.buttonPressed("action:task_done") && route != null) {
             if (user.state() == UserState.ACTIVE) {
                 ProgressResult result = pet.completeCurrentTask(user, message.deliveryId());
@@ -65,7 +71,7 @@ public final class StudentBot {
             return;
         }
 
-        Long taskId = callbackId(message.buttonId(), "task:open:");
+        taskId = callbackId(message.buttonId(), "task:open:");
         if (taskId != null) {
             if (journeyReady(user)) pet.showTask(user, taskId); else repeat(user);
             return;
@@ -82,7 +88,7 @@ public final class StudentBot {
         }
 
         if (message.hasText() && user.state() == UserState.WAITING_GOAL) {
-            pet.createPlan(user, message.text());
+            pet.createPlan(user, message.text(), route.displayedPetScenario());
             return;
         }
         if (message.hasText() && user.state() == UserState.WAITING_TASK_TITLE) {

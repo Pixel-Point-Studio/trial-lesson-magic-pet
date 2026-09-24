@@ -1,5 +1,4 @@
 diff --git a/src/main/java/studio/pixelpoint/magicpet/domain/LevelProgression.java b/src/main/java/studio/pixelpoint/magicpet/domain/LevelProgression.java
-index 07f4317..db96e15 100644
 --- a/src/main/java/studio/pixelpoint/magicpet/domain/LevelProgression.java
 +++ b/src/main/java/studio/pixelpoint/magicpet/domain/LevelProgression.java
 @@ -9,7 +9,8 @@ public final class LevelProgression {
@@ -13,34 +12,35 @@ index 07f4317..db96e15 100644
      }
  
 diff --git a/src/main/java/studio/pixelpoint/magicpet/lesson/route/SportLesson.java b/src/main/java/studio/pixelpoint/magicpet/lesson/route/SportLesson.java
-index 65590bd..1899e87 100644
 --- a/src/main/java/studio/pixelpoint/magicpet/lesson/route/SportLesson.java
 +++ b/src/main/java/studio/pixelpoint/magicpet/lesson/route/SportLesson.java
-@@ -20,20 +20,12 @@ public final class SportLesson implements LessonRoute {
-     // ISSUE I3 — кнопка «Подсказка»
+@@ -21,18 +21,16 @@ public final class SportLesson implements LessonRoute {
+     // ISSUE I3 — удаление сначала просит подтверждение
      // ISSUE I4 — кнопка «До следующего уровня»
      @Override public List<Button> taskButtons() {
--        return List.of(
--                new Button("action:hint", "💡 Подсказка"),
--                new Button("action:level_progress", "📈 До следующего уровня"));
-+        // TODO STUDENT I3: добавь кнопку подсказки и её обработчик ниже.
+-        return List.of(new Button("action:level_progress", "📈 До следующего уровня"));
 +        // TODO STUDENT I4: добавь кнопку прогресса и её обработчик ниже.
 +        return List.of();
      }
  
      @Override public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
--        if (message.buttonPressed("action:hint")) {
--            pet.showHint(user);
--            return true;
--        }
+         Long taskId = StudentBot.callbackId(message.buttonId(), "task:confirm_delete:");
+         if (taskId != null) {
+-            pet.confirmTaskDeletion(user, taskId);
++            // TODO STUDENT I3: сначала покажи вопрос с кнопками «Да» и «Нет».
++            pet.deleteTask(user, taskId);
+             return true;
+         }
 -        if (message.buttonPressed("action:level_progress")) {
 -            pet.showLevelProgress(user);
 -            return true;
 -        }
          return false;
      }
- 
-@@ -45,7 +37,8 @@ public final class SportLesson implements LessonRoute {
+@@ -42,9 +40,10 @@ public final class SportLesson implements LessonRoute {
+     // ISSUE I2 — изображение использует фактический новый уровень
+     @Override public void afterTaskCompleted(PetFacade pet, UserSession user, ProgressResult result) {
+         UserSession refreshed = pet.refreshUser(user);
          pet.showProgress(refreshed, result);
          if (result.levelUp()) {
              pet.showLevelUp(refreshed, result);
