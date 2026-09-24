@@ -70,6 +70,5 @@ Magic Pet — Telegram-бот с искусственным интеллекто
 - [product-spec.md](product-spec.md) — продуктовая спецификация;
 - [technical-spec.md](technical-spec.md) — техническая спецификация;
 - [implementation-plan.md](implementation-plan.md) — история и план реализации;
-- [student-tasks-walkthrough.md](student-tasks-walkthrough.md) — технический дизайн 12 учебных задач;
 - [acceptance](acceptance) — материалы внутренней приёмки;
 - [scripts](scripts) — подготовка занятия и автоматические проверки.

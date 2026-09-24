@@ -12,5 +12,4 @@
 - [product-spec.md](product-spec.md) — продуктовая спецификация.
 - [technical-spec.md](technical-spec.md) — техническая спецификация.
 - [implementation-plan.md](implementation-plan.md) — последовательность реализации.
-- [student-tasks-walkthrough.md](student-tasks-walkthrough.md) — технический дизайн 12 независимых задач.
 - [acceptance](acceptance) — внутренняя проверка и отчёт пилота.
