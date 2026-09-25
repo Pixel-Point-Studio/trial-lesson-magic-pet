@@ -37,8 +37,12 @@ grep -q 'Magic Pet: запустить бота' .vscode/tasks.json \
   || { echo "ОШИБКА ПРИЁМКИ: в VS Code нет готовой команды запуска" >&2; exit 1; }
 grep -q 'Magic Pet: подготовить пробный урок' .vscode/tasks.json \
   || { echo "ОШИБКА ПРИЁМКИ: в VS Code нет кроссплатформенной подготовки занятия" >&2; exit 1; }
+grep -q 'Magic Pet: проверить задание' .vscode/tasks.json \
+  || { echo "ОШИБКА ПРИЁМКИ: в VS Code нет кроссплатформенной проверки задания" >&2; exit 1; }
 grep -q "tasks.register('prepareLesson')" build.gradle \
   || { echo "ОШИБКА ПРИЁМКИ: Gradle-задача подготовки занятия отсутствует" >&2; exit 1; }
+[[ "$(grep -R 'TODO STUDENT' src/main/java | wc -l | tr -d ' ')" == "12" ]] \
+  || { echo "ОШИБКА ПРИЁМКИ: в main должно быть двенадцать учебных задач" >&2; exit 1; }
 grep -q 'github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues' README.md \
   || { echo "ОШИБКА ПРИЁМКИ: README не ведёт к списку заданий на GitHub" >&2; exit 1; }
 grep -q 'notion.so/3e16ba2ce4e8801a9c67c1830814439b' README.md \

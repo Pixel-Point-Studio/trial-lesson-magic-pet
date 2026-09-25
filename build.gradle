@@ -156,3 +156,39 @@ tasks.register('prepareLesson') {
         }
     }
 }
+
+tasks.register('checkTask') {
+    group = 'magic pet'
+    description = 'Проверяет одно учебное задание по коду S1–S4, I1–I4 или B1–B4.'
+
+    doLast {
+        Map<String, String> testsByCode = [
+                S1: 'studyWrongPet', S2: 'studySavesCustomName',
+                S3: 'studyShowsPet', S4: 'studyRenamesPet',
+                I1: 'sportLevelsAtOneHundred', I2: 'sportShowsCurrentLevelImage',
+                I3: 'sportConfirmsDeletion', I4: 'sportShowsLevelProgress',
+                B1: 'blogShowsActiveTasks', B2: 'blogDeletesWithoutXp',
+                B3: 'blogShowsHint', B4: 'blogShowsFullPlan'
+        ]
+        String code = providers.gradleProperty('task').getOrElse('').toUpperCase()
+        if (!testsByCode.containsKey(code)) {
+            throw new GradleException('Введите код задания: S1–S4, I1–I4 или B1–B4.')
+        }
+
+        String wrapper = System.getProperty('os.name').toLowerCase().contains('windows')
+                ? new File(projectDir, 'gradlew.bat').absolutePath
+                : new File(projectDir, 'gradlew').absolutePath
+        def process = new ProcessBuilder(wrapper, 'test',
+                '--tests', "*LessonRouteContractTest.${testsByCode[code]}", '--quiet')
+                .directory(projectDir)
+                .redirectErrorStream(true)
+                .start()
+        process.inputStream.getText('UTF-8')
+        int exitCode = process.waitFor()
+        if (exitCode == 0) {
+            println "✅ Задание ${code} выполнено"
+        } else {
+            throw new GradleException("Пока не получилось выполнить ${code}. Проверьте подсказку в карточке GitHub и последние изменения.")
+        }
+    }
+}

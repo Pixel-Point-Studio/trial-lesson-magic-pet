@@ -61,7 +61,12 @@ case "$mode" in
     ./gradlew compileJava --quiet
     ;;
   full)
-    ./gradlew test --quiet
+    current_branch="$(git branch --show-current)"
+    if [[ "$current_branch" == "stage" ]]; then
+      ./gradlew test --quiet
+    else
+      ./scripts/verify-training-main.sh
+    fi
     ;;
   *)
     fail "неизвестный режим служебной проверки"

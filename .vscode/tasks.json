@@ -36,6 +36,32 @@
         "panel": "dedicated",
         "clear": true
       }
+    },
+    {
+      "label": "Magic Pet: проверить задание",
+      "type": "process",
+      "command": "${workspaceFolder}/gradlew",
+      "windows": {
+        "command": "${workspaceFolder}\\gradlew.bat"
+      },
+      "args": ["checkTask", "-Ptask=${input:taskCode}", "--console=plain"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "taskCode",
+      "type": "promptString",
+      "description": "Код задания, например S1, I3 или B4",
+      "default": "S1"
     }
   ]
 }
