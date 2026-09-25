@@ -23,15 +23,19 @@ class LessonMaterialsTest {
     }
 
     @Test
-    void everyRouteHasBundlePatchAndGitHubIssueLinks() throws Exception {
-        String preparationScript = Files.readString(root.resolve("scripts/prepare-lesson.sh"));
-        for (String route : List.of("study", "sport", "blog")) {
-            String patch = Files.readString(root.resolve("lesson/patches/" + route + ".patch"));
-            assertEquals(4, patch.lines().filter(line -> line.startsWith("+") && line.contains("TODO STUDENT")).count());
-            assertTrue(patch.contains("Lesson.java") || patch.contains("LevelProgression.java"));
-        }
-        assertEquals(12, preparationScript.lines()
+    void workspaceContainsAllIssuesAndCrossPlatformPreparation() throws Exception {
+        String lessonReadme = Files.readString(root.resolve("lesson/README.lesson.md"));
+        assertEquals(12, lessonReadme.lines()
                 .filter(line -> line.contains("github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/"))
                 .count());
+        assertTrue(lessonReadme.contains("смешать темы"));
+
+        String tasks = Files.readString(root.resolve(".vscode/tasks.json"));
+        assertTrue(tasks.contains("Magic Pet: подготовить пробный урок"));
+        assertTrue(tasks.contains("gradlew.bat"));
+
+        String build = Files.readString(root.resolve("build.gradle"));
+        assertTrue(build.contains("prepareLesson"));
+        assertFalse(Files.exists(root.resolve("НАЧАТЬ УРОК.app")));
     }
 }

@@ -3,6 +3,12 @@ plugins {
     id 'java'
 }
 
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 group = 'studio.pixelpoint'
 version = '1.0.0'
 
@@ -36,4 +42,117 @@ tasks.named('test') {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release = 21
+}
+
+def runCaptured = { List<String> command, File directory ->
+    def process = new ProcessBuilder(command)
+            .directory(directory)
+            .redirectErrorStream(true)
+            .start()
+    def output = process.inputStream.getText('UTF-8')
+    def exitCode = process.waitFor()
+    if (exitCode != 0) {
+        throw new GradleException("Команда завершилась с ошибкой:\n${output.trim()}")
+    }
+    output.trim()
+}
+
+tasks.register('prepareLesson') {
+    group = 'magic pet'
+    description = 'Создаёт отдельную папку для пробного урока и открывает её в VS Code.'
+    dependsOn tasks.named('classes')
+
+    doLast {
+        File source = projectDir.canonicalFile
+        if (runCaptured(['git', 'branch', '--show-current'], source) != 'main') {
+            throw new GradleException('Откройте исходный проект на ветке main и повторите подготовку.')
+        }
+        if (!runCaptured(['git', 'status', '--porcelain', '--untracked-files=normal'], source).isEmpty()) {
+            throw new GradleException('В исходной папке есть несохранённые изменения. Позовите технического специалиста.')
+        }
+
+        String timestamp = providers.gradleProperty('lessonTimestamp')
+                .getOrElse(LocalDateTime.now().format(DateTimeFormatter.ofPattern('yyyyMMdd-HHmmss')))
+        if (!(timestamp ==~ /[0-9]{8}-[0-9]{6}(-[0-9]+)?/)) {
+            throw new GradleException('Не удалось создать номер занятия.')
+        }
+
+        String branchName = "lesson/session-${timestamp}"
+        File parent = providers.gradleProperty('lessonWorktreeRoot')
+                .map { new File(it) }
+                .getOrElse(new File(source.parentFile, 'magic-pet-lessons'))
+                .canonicalFile
+        File target = new File(parent, "session-${timestamp}").canonicalFile
+        parent.mkdirs()
+        if (target.exists()) {
+            throw new GradleException("Папка занятия уже существует: ${target}")
+        }
+
+        boolean worktreeCreated = false
+        try {
+            runCaptured(['git', 'show-ref', '--verify', '--quiet', 'refs/heads/main'], source)
+            runCaptured(['git', 'worktree', 'add', '-b', branchName, target.absolutePath, 'main'], source)
+            worktreeCreated = true
+
+            Files.copy(new File(target, '.env.example').toPath(), new File(target, '.env').toPath(),
+                    StandardCopyOption.REPLACE_EXISTING)
+            Files.createDirectories(new File(target, 'data').toPath())
+
+            File secretFile = new File(source, '.env.lesson-secrets')
+            File envFile = new File(target, '.env')
+            Map<String, String> schoolAi = [:]
+            if (secretFile.isFile()) {
+                secretFile.readLines('UTF-8').each { line ->
+                    int separator = line.indexOf('=')
+                    if (separator > 0) {
+                        String key = line.substring(0, separator)
+                        if (key in ['LLM_API_URL', 'LLM_API_KEY', 'LLM_MODEL'] && separator < line.length() - 1) {
+                            schoolAi[key] = line
+                        }
+                    }
+                }
+            }
+            List<String> envLines = envFile.readLines('UTF-8').collect { line ->
+                int separator = line.indexOf('=')
+                String key = separator > 0 ? line.substring(0, separator) : ''
+                schoolAi.containsKey(key) ? schoolAi[key] : line
+            }
+            envFile.setText(envLines.join(System.lineSeparator()) + System.lineSeparator(), 'UTF-8')
+
+            String aiStatus = schoolAi.containsKey('LLM_API_URL')
+                    ? 'подключён автоматически'
+                    : 'не настроен — бот использует готовый резервный план'
+            File lessonReadme = new File(target, 'lesson/README.lesson.md')
+            String readme = lessonReadme.getText('UTF-8').replace('{{AI_STATUS}}', aiStatus)
+            new File(target, 'README.md').setText(readme, 'UTF-8')
+            Files.delete(lessonReadme.toPath())
+
+            runCaptured(['git', 'add', '-u'], target)
+            runCaptured(['git', '-c', 'user.name=Pixel Point Lesson',
+                         '-c', 'user.email=lesson@pixelpoint.local',
+                         'commit', '-m', 'Подготовить папку пробного урока'], target)
+
+            println ''
+            println '✅ Папка для урока готова'
+            println "ПАПКА_УРОКА=${target.absolutePath}"
+            println 'В ней доступны все три темы и все 12 независимых заданий.'
+
+            if (!providers.gradleProperty('lessonNoOpen').map { it == 'true' }.getOrElse(false)) {
+                String executable = System.getProperty('os.name').toLowerCase().contains('windows') ? 'code.cmd' : 'code'
+                try {
+                    new ProcessBuilder(executable, '--new-window', target.absolutePath,
+                            new File(target, 'README.md').absolutePath).start()
+                    println 'Visual Studio Code открыт автоматически.'
+                } catch (IOException ignored) {
+                    println 'VS Code не открылся автоматически. Откройте указанную выше папку вручную.'
+                }
+            }
+        } catch (Exception failure) {
+            if (worktreeCreated) {
+                try { runCaptured(['git', 'worktree', 'remove', '--force', target.absolutePath], source) } catch (Exception ignored) {}
+                try { runCaptured(['git', 'branch', '-D', branchName], source) } catch (Exception ignored) {}
+            }
+            throw failure
+        }
+    }
 }

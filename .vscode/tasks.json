@@ -2,9 +2,31 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "Magic Pet: подготовить пробный урок",
+      "type": "process",
+      "command": "${workspaceFolder}/gradlew",
+      "windows": {
+        "command": "${workspaceFolder}\\gradlew.bat"
+      },
+      "args": ["prepareLesson", "--console=plain"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
       "label": "Magic Pet: запустить бота",
-      "type": "shell",
-      "command": "./gradlew run --console=plain",
+      "type": "process",
+      "command": "${workspaceFolder}/gradlew",
+      "windows": {
+        "command": "${workspaceFolder}\\gradlew.bat"
+      },
+      "args": ["run", "--console=plain"],
       "options": {
         "cwd": "${workspaceFolder}"
       },

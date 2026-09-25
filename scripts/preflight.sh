@@ -2,11 +2,10 @@
 set -euo pipefail
 
 # Внутренняя служебная проверка. МОП не запускает этот файл вручную:
-# его вызывают prepare-lesson.sh и полная проверка владельца проекта.
+# его используют Gradle-задача подготовки и полная проверка владельца проекта.
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 mode="${1:-full}"
-route="${2:-}"
 
 fail() {
   echo "ОШИБКА ПРОВЕРКИ: $1" >&2
@@ -57,19 +56,12 @@ case "$mode" in
     ./gradlew compileJava --quiet
     ;;
   --prepared)
-    [[ "$route" =~ ^(study|sport|blog)$ ]] || fail "неверно выбрана тема занятия"
     todo_count="$(grep -R 'TODO STUDENT' src/main/java | wc -l | tr -d ' ')"
-    [[ "$todo_count" == "4" ]] || fail "в подготовленном маршруте должно быть ровно четыре TODO STUDENT"
+    [[ "$todo_count" == "12" ]] || fail "в подготовленной папке должно быть двенадцать учебных задач"
     ./gradlew compileJava --quiet
-    set +e
-    ./gradlew test --tests "*LessonRouteContractTest.${route}*" --quiet >/dev/null 2>&1
-    defect_result=$?
-    set -e
-    [[ $defect_result -ne 0 ]] || fail "в подготовленной теме не воспроизводится учебная ошибка"
     ;;
   full)
     ./gradlew test --quiet
-    ./scripts/verify-lesson-patches.sh
     ;;
   *)
     fail "неизвестный режим служебной проверки"
