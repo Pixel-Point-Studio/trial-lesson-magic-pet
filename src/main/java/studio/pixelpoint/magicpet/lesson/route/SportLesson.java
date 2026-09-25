@@ -21,17 +21,15 @@ public final class SportLesson implements LessonRoute {
     // ISSUE I3 — удаление сначала просит подтверждение
     // ISSUE I4 — кнопка «До следующего уровня»
     @Override public List<Button> taskButtons() {
-        return List.of(new Button("action:level_progress", "📈 До следующего уровня"));
+        // TODO STUDENT I4: добавь кнопку прогресса и её обработчик ниже.
+        return List.of();
     }
 
     @Override public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
         Long taskId = StudentBot.callbackId(message.buttonId(), "task:confirm_delete:");
         if (taskId != null) {
-            pet.confirmTaskDeletion(user, taskId);
-            return true;
-        }
-        if (message.buttonPressed("action:level_progress")) {
-            pet.showLevelProgress(user);
+            // TODO STUDENT I3: сначала покажи вопрос с кнопками «Да» и «Нет».
+            pet.deleteTask(user, taskId);
             return true;
         }
         return false;
@@ -45,7 +43,8 @@ public final class SportLesson implements LessonRoute {
         pet.showProgress(refreshed, result);
         if (result.levelUp()) {
             pet.showLevelUp(refreshed, result);
-            pet.showPet(refreshed, result.level());
+            // TODO STUDENT I2: покажи изображение фактического нового уровня.
+            pet.showPet(refreshed, 1);
         }
         pet.continueAfterCompletion(refreshed, result, taskButtons());
     }

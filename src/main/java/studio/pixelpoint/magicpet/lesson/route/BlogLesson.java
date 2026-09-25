@@ -20,31 +20,24 @@ public final class BlogLesson implements LessonRoute {
     // ISSUE B3 — кнопка «Подсказка»
     // ISSUE B4 — кнопка «Весь план»
     @Override public List<Button> taskButtons() {
-        return List.of(
-                new Button("action:hint", "💡 Подсказка"),
-                new Button("action:show_plan", "🗺 Весь план"));
+        // TODO STUDENT B3: добавь кнопку подсказки и её обработчик ниже.
+        // TODO STUDENT B4: добавь кнопку «Весь план» и её обработчик ниже.
+        return List.of();
     }
 
     @Override public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
         // ISSUE B1 — «Мои задачи» показывает только активные
         if (message.buttonPressed("action:my_tasks")) {
-            if (StudentBot.journeyReady(user)) pet.showTasks(user, false); else pet.repeatPrompt(user);
-            return true;
-        }
-
-        if (message.buttonPressed("action:hint")) {
-            pet.showHint(user);
+            // TODO STUDENT B1: выбери правильный список задач.
+            if (StudentBot.journeyReady(user)) pet.showTasks(user, true); else pet.repeatPrompt(user);
             return true;
         }
 
         // ISSUE B2 — подтверждённое удаление не выполняет задачу и не начисляет XP
         Long taskId = StudentBot.callbackId(message.buttonId(), "task:delete:");
         if (taskId != null) {
-            pet.deleteTask(user, taskId);
-            return true;
-        }
-        if (message.buttonPressed("action:show_plan")) {
-            pet.showPlan(user);
+            // TODO STUDENT B2: вызови действие с правильным эффектом.
+            pet.completeTask(user, taskId, message.deliveryId());
             return true;
         }
         return false;

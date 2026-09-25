@@ -9,7 +9,8 @@ import java.util.List;
 
 public final class StudyLesson implements LessonRoute {
     @Override public Scenario scenario() { return Scenario.STUDY; }
-    @Override public Scenario displayedPetScenario() { return Scenario.STUDY; }
+    // TODO STUDENT S1: проверь, изображение какого Pet показывается после создания плана.
+    @Override public Scenario displayedPetScenario() { return Scenario.SPORT; }
     @Override public boolean selectionPressed(IncomingMessage message) { return message.buttonPressed("scenario:study"); }
 
     // ISSUE S1 — после выбора появляется другой Pet
@@ -20,33 +21,24 @@ public final class StudyLesson implements LessonRoute {
 
     // ISSUE S2 — бот запоминает придуманное имя
     @Override public void acceptPetName(PetFacade pet, UserSession user, String name) {
-        pet.namePet(user, name);
+        // TODO STUDENT S2: передай имя, которое написал пользователь.
+        pet.namePet(user, "Руни");
     }
 
     // ISSUE S3 — кнопка «Мой Pet»
     // ISSUE S4 — переименование Pet
     @Override public List<Button> taskButtons() {
-        return List.of(
-                new Button("action:show_pet", "🐾 Мой Pet"),
-                new Button("action:rename_pet", "✏️ Переименовать Pet"));
+        // TODO STUDENT S3: добавь кнопку «Мой Pet» и её обработчик ниже.
+        // TODO STUDENT S4: добавь кнопку переименования, обработчик и приём нового имени.
+        return List.of();
     }
 
     @Override public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
-        if (message.buttonPressed("action:show_pet")) {
-            pet.showPet(user);
-            return true;
-        }
-        if (message.buttonPressed("action:rename_pet")) {
-            pet.beginPetRename(user);
-            return true;
-        }
         return false;
     }
 
     @Override public boolean handleText(PetFacade pet, UserSession user, IncomingMessage message) {
-        if (user.state() != UserState.WAITING_PET_RENAME || !message.hasText()) return false;
-        pet.renamePet(user, message.text());
-        return true;
+        return false;
     }
 
     @Override public void afterTaskCompleted(PetFacade pet, UserSession user, ProgressResult result) {

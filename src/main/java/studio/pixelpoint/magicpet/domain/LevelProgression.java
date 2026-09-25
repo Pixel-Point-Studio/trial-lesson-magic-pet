@@ -9,7 +9,8 @@ public final class LevelProgression {
 
     public static int levelFor(int experience) {
         if (experience >= 250) return 3;
-        if (experience >= 100) return 2;
+        // TODO STUDENT I1: проверь значение ровно на границе уровня.
+        if (experience > 100) return 2;
         return 1;
     }
 
