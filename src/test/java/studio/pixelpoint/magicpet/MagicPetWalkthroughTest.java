@@ -10,7 +10,7 @@ import studio.pixelpoint.magicpet.application.port.PlanGenerator;
 import studio.pixelpoint.magicpet.domain.UserSession;
 import studio.pixelpoint.magicpet.domain.UserState;
 import studio.pixelpoint.magicpet.infrastructure.plan.FallbackPlanGenerator;
-import studio.pixelpoint.magicpet.infrastructure.plan.AiProxyPlanGenerator;
+import studio.pixelpoint.magicpet.infrastructure.plan.OpenAiResponsesPlanGenerator;
 import studio.pixelpoint.magicpet.infrastructure.plan.ResilientPlanGenerator;
 import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteDatabase;
 import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteUserStore;
@@ -35,7 +35,7 @@ class MagicPetWalkthroughTest {
         int closedPort;
         try (ServerSocket socket = new ServerSocket(0)) { closedPort = socket.getLocalPort(); }
         PlanGenerator plans = new ResilientPlanGenerator(
-                new AiProxyPlanGenerator(URI.create("http://127.0.0.1:" + closedPort + "/plan"),
+                new OpenAiResponsesPlanGenerator(URI.create("http://127.0.0.1:" + closedPort + "/v1/responses"),
                         "secret", "model", Duration.ofMillis(100)),
                 new FallbackPlanGenerator());
         PetFacade facade = new PetFacade(telegram, users, plans, noAssets, UiTexts.load());

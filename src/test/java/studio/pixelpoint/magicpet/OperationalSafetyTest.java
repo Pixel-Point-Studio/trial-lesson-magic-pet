@@ -49,6 +49,22 @@ class OperationalSafetyTest {
     }
 
     @Test
+    void directOpenAiConfigurationRequiresKeyAndModel() {
+        var missingKey = assertThrows(AppConfig.ConfigurationException.class, () -> AppConfig.load(tempDir, Map.of(
+                "TELEGRAM_BOT_TOKEN", "telegram-secret",
+                "LLM_API_URL", "https://api.openai.com/v1/responses",
+                "LLM_MODEL", "gpt-4o-mini-2024-07-18")));
+        assertTrue(missingKey.getMessage().contains("LLM_API_KEY"));
+
+        var missingModel = assertThrows(AppConfig.ConfigurationException.class, () -> AppConfig.load(tempDir, Map.of(
+                "TELEGRAM_BOT_TOKEN", "telegram-secret",
+                "LLM_API_URL", "https://api.openai.com/v1/responses",
+                "LLM_API_KEY", "openai-secret")));
+        assertTrue(missingModel.getMessage().contains("LLM_MODEL"));
+        assertFalse(missingModel.getMessage().contains("openai-secret"));
+    }
+
+    @Test
     void safeLoggerNeverPrintsExceptionMessageOrStackTrace() {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         SafeLogger logger = new SafeLogger(new PrintStream(bytes, true, StandardCharsets.UTF_8));

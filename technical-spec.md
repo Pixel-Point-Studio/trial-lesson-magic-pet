@@ -21,7 +21,7 @@
 - SQLite как локальная база данных.
 - JDBC-драйвер SQLite.
 - **Flyway** для версионированных SQL-миграций SQLite.
-- Java HttpClient или отдельный клиент для обращения к общему AI-прокси школы, связанному со школьным аккаунтом ChatGPT/OpenAI.
+- Java HttpClient для прямого обращения к OpenAI Responses API со Structured Outputs.
 - dotenv-библиотека или собственный безопасный загрузчик .env.
 - JUnit для автоматических тестов.
 - Статические **PNG-ассеты** Magic Pet.
@@ -40,7 +40,7 @@ flowchart LR
     S --> R["SQLite repositories"]
     S --> AI["PlanGenerator"]
     S --> A["AssetCatalog"]
-    AI --> P["AI proxy or fallback templates"]
+    AI --> P["OpenAI Responses API or fallback templates"]
     R --> DB["SQLite file"]
     F --> TGA
 ```
@@ -335,9 +335,9 @@ Fallback включается автоматически и не требует 
 
 ```jsx
 TELEGRAM_BOT_TOKEN=replace_me
-LLM_API_URL=https://school-proxy.example/api
-LLM_API_KEY=replace_me
-LLM_MODEL=replace_me
+LLM_API_URL=https://api.openai.com/v1/responses
+LLM_API_KEY=<OpenAI API key>
+LLM_MODEL=gpt-4o-mini-2024-07-18
 DATABASE_PATH=./data/pet.db
 ASSET_DIRECTORY=./assets
 APP_MODE=lesson
@@ -466,7 +466,7 @@ Gradle-задача:
 
 - [x]  Telegram: библиотека **TelegramBots** в long polling; официальным является Telegram Bot API, а Java-библиотека является внешней обёрткой. Вся коммуникация скрыта за Telegram-адаптером и `PetFacade`.
 - [x]  Сборка: **Gradle**.
-- [x]  AI: общий прокси школы, связанный со школьным аккаунтом ChatGPT/OpenAI; прямые учётные данные в проект не передаются.
+- [x]  AI: прямой OpenAI Responses API, Structured Outputs и локальный fallback; ключ хранится только в игнорируемых `.env`/`.env.lesson-secrets`.
 - [x]  Миграции SQLite: **Flyway** и версионированные SQL-файлы.
 - [x]  Ассеты: **PNG**.
 - [x]  Подготовка занятия: кроссплатформенная задача VS Code запускает Gradle, который создаёт новую ветку от `main` по времени запуска и отдельный чистый worktree.
@@ -475,6 +475,5 @@ Gradle-задача:
 ## 24. Решения, отложенные до сборки каркаса
 
 - [ ]  точные версии Gradle-плагинов и библиотек;
-- [ ]  формат API общего школьного AI-прокси;
 - [ ]  политика хранения или удаления внутренних веток после занятия;
 - [x]  интерфейс запуска: задача VS Code `Magic Pet: подготовить пробный урок`; запасной интерфейс — `gradlew prepareLesson` или `gradlew.bat prepareLesson`.

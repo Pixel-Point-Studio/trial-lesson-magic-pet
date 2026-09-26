@@ -45,6 +45,14 @@ public record AppConfig(
         int timeout = positiveInt(values.getOrDefault("LLM_TIMEOUT_MS", "5000"), "LLM_TIMEOUT_MS");
         String apiUrl = values.getOrDefault("LLM_API_URL", "").trim();
         validateApiUrl(apiUrl);
+        String apiKey = values.getOrDefault("LLM_API_KEY", "").trim();
+        String model = values.getOrDefault("LLM_MODEL", "").trim();
+        if (!apiUrl.isBlank() && apiKey.isBlank()) {
+            throw new ConfigurationException("Для прямого OpenAI API заполните LLM_API_KEY");
+        }
+        if (!apiUrl.isBlank() && model.isBlank()) {
+            throw new ConfigurationException("Для прямого OpenAI API заполните LLM_MODEL");
+        }
         AppMode appMode = AppMode.parse(values.getOrDefault("APP_MODE", "production"));
         int retryAttempts = boundedInt(values.getOrDefault("TELEGRAM_RETRY_ATTEMPTS", "3"),
                 "TELEGRAM_RETRY_ATTEMPTS", 1, 10);
@@ -52,8 +60,7 @@ public record AppConfig(
                 "TELEGRAM_RETRY_DELAY_MS", 0, 30_000);
         return new AppConfig(token, assets, database,
                 apiUrl,
-                values.getOrDefault("LLM_API_KEY", "").trim(),
-                values.getOrDefault("LLM_MODEL", "").trim(), timeout, appMode, retryAttempts, retryDelay);
+                apiKey, model, timeout, appMode, retryAttempts, retryDelay);
     }
 
     private static void parse(List<String> lines, Map<String, String> target) {

@@ -12,4 +12,5 @@
 - [product-spec.md](product-spec.md) — продуктовая спецификация.
 - [technical-spec.md](technical-spec.md) — техническая спецификация.
 - [implementation-plan.md](implementation-plan.md) — последовательность реализации.
+- [openai-responses-contract.md](openai-responses-contract.md) — прямой контракт OpenAI API и безопасный fallback.
 - [acceptance](acceptance) — внутренняя проверка и отчёт пилота.
