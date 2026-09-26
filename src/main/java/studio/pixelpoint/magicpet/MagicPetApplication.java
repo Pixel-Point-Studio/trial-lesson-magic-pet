@@ -9,7 +9,7 @@ import studio.pixelpoint.magicpet.application.port.PlanGenerator;
 import studio.pixelpoint.magicpet.infrastructure.assets.FileAssetCatalog;
 import studio.pixelpoint.magicpet.infrastructure.config.AppConfig;
 import studio.pixelpoint.magicpet.infrastructure.plan.FallbackPlanGenerator;
-import studio.pixelpoint.magicpet.infrastructure.plan.AiProxyPlanGenerator;
+import studio.pixelpoint.magicpet.infrastructure.plan.OpenAiResponsesPlanGenerator;
 import studio.pixelpoint.magicpet.infrastructure.plan.ResilientPlanGenerator;
 import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteDatabase;
 import studio.pixelpoint.magicpet.infrastructure.sqlite.SqliteUserStore;
@@ -36,7 +36,7 @@ public final class MagicPetApplication {
             var telegramClient = new OkHttpTelegramClient(config.telegramBotToken());
             var gateway = new TelegramBotGateway(telegramClient);
             String jdbcUrl = SqliteDatabase.migrate(config.databasePath());
-            var facade = new PetFacade(gateway, new SqliteUserStore(jdbcUrl), planGenerator(config),
+            var facade = new PetFacade(gateway, new SqliteUserStore(jdbcUrl), planGenerator(config, logger),
                     new FileAssetCatalog(config.assetDirectory()), texts);
             var bot = new TelegramBotAdapter(new StudentBot(facade, config.resetEnabled()), logger);
 
@@ -61,11 +61,15 @@ public final class MagicPetApplication {
         }
     }
 
-    private static PlanGenerator planGenerator(AppConfig config) {
+    private static PlanGenerator planGenerator(AppConfig config, SafeLogger logger) {
         PlanGenerator fallback = new FallbackPlanGenerator();
-        if (config.llmApiUrl().isBlank()) return fallback;
-        PlanGenerator ai = new AiProxyPlanGenerator(URI.create(config.llmApiUrl()), config.llmApiKey(),
+        if (config.llmApiUrl().isBlank()) {
+            logger.info("ai.disabled");
+            return fallback;
+        }
+        logger.info("ai.enabled");
+        PlanGenerator ai = new OpenAiResponsesPlanGenerator(URI.create(config.llmApiUrl()), config.llmApiKey(),
                 config.llmModel(), Duration.ofMillis(config.llmTimeoutMillis()));
-        return new ResilientPlanGenerator(ai, fallback);
+        return new ResilientPlanGenerator(ai, fallback, logger);
     }
 }
