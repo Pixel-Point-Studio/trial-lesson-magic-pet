@@ -9,6 +9,16 @@ import studio.pixelpoint.magicpet.domain.UserSession;
 
 import java.util.List;
 
+/**
+ * Общая форма одного направления Magic Pet: «Учёба», «Спорт» или «Личный блог».
+ *
+ * <p>Каждое направление реализовано отдельным маленьким классом. На занятии студент обычно
+ * работает именно в таком классе, а готовые действия вызывает через {@link PetFacade}.</p>
+ *
+ * <p>{@code taskButtons} описывает дополнительные кнопки, {@code handleButton} реагирует
+ * на нажатия, {@code handleText} принимает следующий текст пользователя, а
+ * {@code afterTaskCompleted} показывает результат выполненного задания.</p>
+ */
 public interface LessonRoute {
     Scenario scenario();
     default Scenario displayedPetScenario() { return scenario(); }

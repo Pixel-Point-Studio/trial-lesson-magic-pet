@@ -10,6 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 
+/**
+ * Каталог готовых действий продукта для файлов направлений.
+ *
+ * <p>Если учебная задача просит показать Pet, план, подсказку или изменить задачу,
+ * сначала найди здесь публичный метод с подходящим названием. Внутреннее устройство
+ * метода для его вызова понимать не обязательно.</p>
+ */
 public final class PetFacade {
     private final TelegramGateway telegram;
     private final UserStore users;
@@ -119,6 +126,7 @@ public final class PetFacade {
         telegram.sendButtons(user.userId(), body, buttons);
     }
 
+    /** Показывает выполненные задачи при {@code completed = true}, иначе только активные. */
     public void showTasks(UserSession user, boolean completed) {
         List<UserTask> tasks = users.findTasks(user.userId(), completed);
         List<Button> buttons = new java.util.ArrayList<>();
@@ -200,6 +208,7 @@ public final class PetFacade {
         showTasks(refreshed, false);
     }
 
+    /** Удаляет выбранную задачу без выполнения и без начисления опыта. */
     public void deleteTask(UserSession user, long taskId) {
         if (users.deleteTask(user.userId(), taskId)) {
             telegram.sendText(user.userId(), texts.message("taskDeleted"));
@@ -209,10 +218,12 @@ public final class PetFacade {
         }
     }
 
+    /** Показывает текущего Pet с его настоящим именем, уровнем и опытом. */
     public void showPet(UserSession user) {
         showPet(user, user.level());
     }
 
+    /** Показывает изображение Pet для переданного уровня. */
     public void showPet(UserSession user, int displayedLevel) {
         showPet(user, user.scenario(), displayedLevel);
     }
@@ -249,12 +260,14 @@ public final class PetFacade {
         else showCurrentTask(user, routeButtons);
     }
 
+    /** Просит пользователя прислать новое имя Pet следующим сообщением. */
     public void beginPetRename(UserSession user) {
         user.beginPetRename();
         users.save(user);
         telegram.sendText(user.userId(), texts.message("askPetRename"));
     }
 
+    /** Сохраняет новое имя Pet и сразу показывает результат. */
     public boolean renamePet(UserSession user, String newName) {
         String clean = clean(newName);
         if (clean.isBlank() || clean.length() > 32) {
@@ -268,6 +281,7 @@ public final class PetFacade {
         return true;
     }
 
+    /** Показывает подсказку к текущему заданию, не выполняя его и не начисляя опыт. */
     public void showHint(UserSession user) {
         String hint = user.currentTask() == null
                 ? hints.customHint()
@@ -275,12 +289,14 @@ public final class PetFacade {
         telegram.sendText(user.userId(), "💡 " + hint);
     }
 
+    /** Сообщает, сколько опыта осталось до следующего уровня. */
     public void showLevelProgress(UserSession user) {
         LevelProgression.experienceToNextLevel(user.experience()).ifPresentOrElse(
                 xp -> telegram.sendText(user.userId(), texts.template("levelProgress", Map.of("xp", xp))),
                 () -> telegram.sendText(user.userId(), texts.message("maxLevel")));
     }
 
+    /** Показывает весь план и отмечает выполненный, текущий и будущие пункты. */
     public void showPlan(UserSession user) {
         StringBuilder plan = new StringBuilder();
         for (int index = 0; index < user.tasks().size(); index++) {
@@ -292,6 +308,7 @@ public final class PetFacade {
         telegram.sendText(user.userId(), texts.template("fullPlan", Map.of("plan", plan.toString())));
     }
 
+    /** Показывает вопрос с кнопками «Да» и «Нет», не удаляя задачу сразу. */
     public void confirmTaskDeletion(UserSession user, long taskId) {
         if (users.findTask(user.userId(), taskId).isEmpty()) {
             telegram.sendText(user.userId(), texts.message("taskNotFound"));

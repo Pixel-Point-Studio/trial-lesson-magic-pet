@@ -8,7 +8,13 @@ import studio.pixelpoint.magicpet.domain.UserState;
 import studio.pixelpoint.magicpet.lesson.route.LessonRoute;
 import studio.pixelpoint.magicpet.lesson.route.LessonRouteRegistry;
 
-/** Общий порядок обработки. Учебные задачи находятся в lesson/route. */
+/**
+ * Общий диспетчер сообщений Telegram.
+ *
+ * <p>Он получает сообщение и передаёт его выбранному направлению из {@code lesson/route}.
+ * На обычном занятии этот файл достаточно прочитать как карту; менять его не нужно,
+ * если карточка GitHub прямо этого не просит.</p>
+ */
 public final class StudentBot {
     private final PetFacade pet;
     private final boolean resetEnabled;

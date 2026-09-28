@@ -8,6 +8,12 @@ import studio.pixelpoint.magicpet.lesson.StudentBot;
 
 import java.util.List;
 
+/**
+ * Поведение Игниса и направления «Спорт».
+ *
+ * <p>Ищи свою метку {@code TODO STUDENT I...}. Готовые действия уже находятся в объекте
+ * {@code pet}, а общее правило уровней — в {@link LevelProgression}.</p>
+ */
 public final class SportLesson implements LessonRoute {
     @Override public Scenario scenario() { return Scenario.SPORT; }
     @Override public boolean selectionPressed(IncomingMessage message) { return message.buttonPressed("scenario:sport"); }
@@ -17,6 +23,7 @@ public final class SportLesson implements LessonRoute {
     }
     @Override public void acceptPetName(PetFacade pet, UserSession user, String name) { pet.namePet(user, name); }
 
+    // Дополнительные кнопки, которые пользователь видит под текущим заданием.
     // ISSUE I1 — граница уровня находится в LevelProgression.levelFor
     // ISSUE I3 — удаление сначала просит подтверждение
     // ISSUE I4 — кнопка «До следующего уровня»
@@ -24,6 +31,7 @@ public final class SportLesson implements LessonRoute {
         return List.of(new Button("action:level_progress", "📈 До следующего уровня"));
     }
 
+    // Скрытое имя кнопки связывает нажатие в Telegram с готовым действием у pet.
     @Override public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
         Long taskId = StudentBot.callbackId(message.buttonId(), "task:confirm_delete:");
         if (taskId != null) {
