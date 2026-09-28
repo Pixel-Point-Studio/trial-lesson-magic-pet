@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Поведение Игниса и направления «Спорт».
  *
- * <p>Ищи свою метку {@code TODO STUDENT I...}. Готовые действия уже находятся в объекте
+ * <p>Ищи в файле комментарий с кодом своей задачи {@code I...}. Готовые действия уже находятся в объекте
  * {@code pet}, а общее правило уровней — в {@link LevelProgression}.</p>
  */
 public final class SportLesson implements LessonRoute {
