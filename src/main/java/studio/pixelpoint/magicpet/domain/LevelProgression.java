@@ -2,6 +2,7 @@ package studio.pixelpoint.magicpet.domain;
 
 import java.util.OptionalInt;
 
+/** Правила, по которым накопленный опыт превращается в уровень любого Magic Pet. */
 public final class LevelProgression {
     public static final int MAX_LEVEL = 3;
 

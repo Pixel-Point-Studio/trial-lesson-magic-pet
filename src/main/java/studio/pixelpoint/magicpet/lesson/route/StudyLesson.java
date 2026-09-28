@@ -7,6 +7,12 @@ import studio.pixelpoint.magicpet.domain.*;
 
 import java.util.List;
 
+/**
+ * Поведение Руни и направления «Учёба».
+ *
+ * <p>Ищи свою метку {@code TODO STUDENT S...}. Готовые действия уже находятся в объекте
+ * {@code pet}: их можно исследовать через Cmd+клик или Ctrl+клик по названию метода.</p>
+ */
 public final class StudyLesson implements LessonRoute {
     @Override public Scenario scenario() { return Scenario.STUDY; }
     // TODO STUDENT S1: проверь, изображение какого Pet показывается после создания плана.
@@ -25,6 +31,7 @@ public final class StudyLesson implements LessonRoute {
         pet.namePet(user, "Руни");
     }
 
+    // Дополнительные кнопки, которые пользователь видит под текущим заданием.
     // ISSUE S3 — кнопка «Мой Pet»
     // ISSUE S4 — переименование Pet
     @Override public List<Button> taskButtons() {
@@ -33,10 +40,12 @@ public final class StudyLesson implements LessonRoute {
         return List.of();
     }
 
+    // Скрытое имя кнопки связывает нажатие в Telegram с готовым действием у pet.
     @Override public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
         return false;
     }
 
+    // Этот метод нужен, когда после кнопки программа ждёт следующий текст пользователя.
     @Override public boolean handleText(PetFacade pet, UserSession user, IncomingMessage message) {
         return false;
     }

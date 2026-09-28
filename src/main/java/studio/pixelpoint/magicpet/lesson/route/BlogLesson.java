@@ -8,6 +8,12 @@ import studio.pixelpoint.magicpet.lesson.StudentBot;
 
 import java.util.List;
 
+/**
+ * Поведение Скрибы и направления «Личный блог».
+ *
+ * <p>Ищи свою метку {@code TODO STUDENT B...}. Готовые действия уже находятся в объекте
+ * {@code pet}: их можно исследовать через Cmd+клик или Ctrl+клик по названию метода.</p>
+ */
 public final class BlogLesson implements LessonRoute {
     @Override public Scenario scenario() { return Scenario.BLOG; }
     @Override public boolean selectionPressed(IncomingMessage message) { return message.buttonPressed("scenario:blog"); }
@@ -17,6 +23,7 @@ public final class BlogLesson implements LessonRoute {
     }
     @Override public void acceptPetName(PetFacade pet, UserSession user, String name) { pet.namePet(user, name); }
 
+    // Дополнительные кнопки, которые пользователь видит под текущим заданием.
     // ISSUE B3 — кнопка «Подсказка»
     // ISSUE B4 — кнопка «Весь план»
     @Override public List<Button> taskButtons() {
@@ -25,6 +32,7 @@ public final class BlogLesson implements LessonRoute {
         return List.of();
     }
 
+    // Скрытое имя кнопки связывает нажатие в Telegram с готовым действием у pet.
     @Override public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
         // ISSUE B1 — «Мои задачи» показывает только активные
         if (message.buttonPressed("action:my_tasks")) {
