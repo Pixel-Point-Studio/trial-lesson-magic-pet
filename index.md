@@ -9,6 +9,7 @@
 ## Для владельца продукта
 
 - [Техническая инструкция владельца продукта](https://www.notion.so/3e26ba2ce4e8813b9fedce0a5342f657) — компьютеры, VS Code, AI, секреты, проверки и восстановление.
+- [Проверка готовности от финальной сессии к документации](acceptance/OWNER-READINESS-GUIDE.md) — пошаговый ручной допуск урока к запуску.
 - [product-spec.md](product-spec.md) — продуктовая спецификация.
 - [technical-spec.md](technical-spec.md) — техническая спецификация.
 - [implementation-plan.md](implementation-plan.md) — последовательность реализации.
