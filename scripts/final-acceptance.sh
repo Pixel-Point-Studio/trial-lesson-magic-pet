@@ -26,6 +26,7 @@ for file in \
   .vscode/extensions.json \
   .vscode/launch.json \
   .vscode/tasks.json \
+  acceptance/OWNER-READINESS-GUIDE.md \
   acceptance/SMOKE-CHECKLIST.md \
   acceptance/PILOT-REPORT.md; do
   [[ -s "$file" ]] || { echo "ОШИБКА ПРИЁМКИ: отсутствует $file" >&2; exit 1; }
