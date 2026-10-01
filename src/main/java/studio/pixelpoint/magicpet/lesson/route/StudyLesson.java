@@ -1,70 +1,17 @@
 package studio.pixelpoint.magicpet.lesson.route;
 
-import studio.pixelpoint.magicpet.application.Button;
 import studio.pixelpoint.magicpet.application.IncomingMessage;
 import studio.pixelpoint.magicpet.application.PetFacade;
-import studio.pixelpoint.magicpet.domain.*;
+import studio.pixelpoint.magicpet.domain.Scenario;
+import studio.pixelpoint.magicpet.domain.UserSession;
+import studio.pixelpoint.magicpet.domain.UserState;
 
-import java.util.List;
-
-/**
- * Поведение Руни и направления «Учёба».
- *
- * <p>Ищи в файле комментарий с кодом своей задачи {@code S...}. Готовые действия уже находятся в объекте
- * {@code pet}: их можно исследовать через Cmd+клик или Ctrl+клик по названию метода.</p>
- */
+/** Выбор Руни и направления «Учёба». */
 public final class StudyLesson implements LessonRoute {
     @Override public Scenario scenario() { return Scenario.STUDY; }
-    @Override public Scenario displayedPetScenario() { return Scenario.STUDY; }
     @Override public boolean selectionPressed(IncomingMessage message) { return message.buttonPressed("scenario:study"); }
-
-    // ISSUE S1 — после выбора появляется другой Pet
     @Override public void select(PetFacade pet, UserSession user) {
-        if (user.state() == UserState.CHOOSING_SCENARIO) pet.selectScenario(user, Scenario.STUDY);
+        if (user.state() == UserState.CHOOSING_SCENARIO) pet.selectScenario(user, scenario());
         else pet.repeatPrompt(user);
-    }
-
-    // ISSUE S2 — бот запоминает придуманное имя
-    @Override public void acceptPetName(PetFacade pet, UserSession user, String name) {
-        pet.namePet(user, name);
-    }
-
-    // Дополнительные кнопки, которые пользователь видит под текущим заданием.
-    // ISSUE S3 — кнопка «Мой Pet»
-    // ISSUE S4 — переименование Pet
-    @Override public List<Button> taskButtons() {
-        return List.of(
-                new Button("action:show_pet", "🐾 Мой Pet"),
-                new Button("action:rename_pet", "✏️ Переименовать Pet"));
-    }
-
-    // Скрытое имя кнопки связывает нажатие в Telegram с готовым действием у pet.
-    @Override public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
-        if (message.buttonPressed("action:show_pet")) {
-            pet.showPet(user);
-            return true;
-        }
-        if (message.buttonPressed("action:rename_pet")) {
-            pet.beginPetRename(user);
-            return true;
-        }
-        return false;
-    }
-
-    // Этот метод нужен, когда после кнопки программа ждёт следующий текст пользователя.
-    @Override public boolean handleText(PetFacade pet, UserSession user, IncomingMessage message) {
-        if (user.state() != UserState.WAITING_PET_RENAME || !message.hasText()) return false;
-        pet.renamePet(user, message.text());
-        return true;
-    }
-
-    @Override public void afterTaskCompleted(PetFacade pet, UserSession user, ProgressResult result) {
-        UserSession refreshed = pet.refreshUser(user);
-        pet.showProgress(refreshed, result);
-        if (result.levelUp()) {
-            pet.showLevelUp(refreshed, result);
-            pet.showPet(refreshed, result.level());
-        }
-        pet.continueAfterCompletion(refreshed, result, taskButtons());
     }
 }

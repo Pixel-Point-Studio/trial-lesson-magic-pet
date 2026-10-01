@@ -55,8 +55,9 @@ for suffix in 1 2; do
   [[ -z "$(git -C "$path" status --porcelain --untracked-files=normal)" ]]
   [[ "$(git -C "$path" rev-list --count main..HEAD)" == "1" ]]
   grep -q '# Начни здесь: твоя папка Magic Pet' "$path/README.md"
-  [[ "$(grep -c 'github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/' "$path/README.md")" == "12" ]]
-  grep -q 'Можно взять две задачи из одной темы или смешать темы' "$path/README.md"
+  [[ "$(grep -c 'github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues/' "$path/README.md")" == "4" ]]
+  grep -q 'Код заданий одинаков для всех трёх Pet' "$path/README.md"
+  grep -q 'PetFeatures.java' "$path/README.md"
   ! grep -q '{{' "$path/README.md"
   [[ ! -e "$path/lesson/README.lesson.md" ]]
 

@@ -57,7 +57,7 @@ case "$mode" in
     ;;
   --prepared)
     todo_count="$(grep -R 'TODO STUDENT' src/main/java | wc -l | tr -d ' ')"
-    [[ "$todo_count" == "12" ]] || fail "в подготовленной папке должно быть двенадцать учебных задач"
+    [[ "$todo_count" == "4" ]] || fail "в подготовленной папке должно быть четыре учебных задания"
     ./gradlew compileJava --quiet
     ;;
   full)

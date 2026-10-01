@@ -7,16 +7,17 @@ repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo_root"
 
 todo_count="$(grep -R 'TODO STUDENT' src/main/java | wc -l | tr -d ' ')"
-[[ "$todo_count" == "12" ]] \
-  || { echo "ОШИБКА: в main должно быть ровно 12 учебных мест, найдено $todo_count" >&2; exit 1; }
+[[ "$todo_count" == "4" ]] \
+  || { echo "ОШИБКА: в main должно быть ровно 4 учебных задания, найдено $todo_count" >&2; exit 1; }
 
 ./gradlew compileJava --quiet
 ./gradlew test --tests '*LessonMaterialsTest' --quiet
 
 tests=(
-  studyWrongPet studySavesCustomName studyShowsPet studyRenamesPet
-  sportLevelsAtOneHundred sportShowsCurrentLevelImage sportConfirmsDeletion sportShowsLevelProgress
-  blogShowsActiveTasks blogDeletesWithoutXp blogShowsHint blogShowsFullPlan
+  task1RemembersEnteredNameForEveryPet
+  task2RenamesEveryPetAndKeepsMenuBelowCurrentAction
+  task3ConfirmsDeletionForEveryPet
+  task4ShowsEveryPetAndKeepsButtonInCommonMenu
 )
 
 for test_name in "${tests[@]}"; do
@@ -28,4 +29,4 @@ for test_name in "${tests[@]}"; do
     || { echo "ОШИБКА: учебная задача уже решена в main: $test_name" >&2; exit 1; }
 done
 
-echo "✅ Учебная ветка проверена: проект собирается, все 12 независимых задач воспроизводятся."
+echo "✅ Учебная ветка проверена: проект собирается, все 4 общих задания воспроизводятся."
