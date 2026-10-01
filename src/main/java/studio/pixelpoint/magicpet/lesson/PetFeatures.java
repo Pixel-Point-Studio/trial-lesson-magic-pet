@@ -66,7 +66,11 @@ public final class PetFeatures {
         return false; // false означает: «это не наша кнопка, пусть программа проверит остальные».
     }
 
-    /** Принимает обычный текст, если перед этим пользователь нажал «Переименовать Pet». */
+    /**
+     * Принимает обычный текст, если перед этим пользователь нажал «Переименовать Pet».
+     * user.state() — текущий шаг разговора, а WAITING_PET_RENAME означает
+     * «бот ждёт, что следующим сообщением человек пришлёт новое имя».
+     */
     public boolean handleText(PetFacade pet, UserSession user, IncomingMessage message) {
         if (user.state() == UserState.WAITING_PET_RENAME && message.hasText()) {
             // ЗАДАНИЕ 2, часть 3: убери // — текст сообщения станет новым именем.
