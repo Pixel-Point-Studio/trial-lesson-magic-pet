@@ -60,8 +60,8 @@
     {
       "id": "taskCode",
       "type": "promptString",
-      "description": "Код задания, например S1, I3 или B4",
-      "default": "S1"
+      "description": "Номер задания: 1, 2, 3 или 4",
+      "default": "1"
     }
   ]
 }

@@ -135,7 +135,7 @@ tasks.register('prepareLesson') {
             println ''
             println '✅ Папка для урока готова'
             println "ПАПКА_УРОКА=${target.absolutePath}"
-            println 'В ней доступны все три темы и все 12 независимых заданий.'
+            println 'Можно выбрать любого Pet. Четыре учебных задания одинаковы для всех трёх тем.'
 
             if (!providers.gradleProperty('lessonNoOpen').map { it == 'true' }.getOrElse(false)) {
                 String executable = System.getProperty('os.name').toLowerCase().contains('windows') ? 'code.cmd' : 'code'
@@ -159,20 +159,18 @@ tasks.register('prepareLesson') {
 
 tasks.register('checkTask') {
     group = 'magic pet'
-    description = 'Проверяет одно учебное задание по коду S1–S4, I1–I4 или B1–B4.'
+    description = 'Проверяет одно из четырёх учебных заданий.'
 
     doLast {
         Map<String, String> testsByCode = [
-                S1: 'studyWrongPet', S2: 'studySavesCustomName',
-                S3: 'studyShowsPet', S4: 'studyRenamesPet',
-                I1: 'sportLevelsAtOneHundred', I2: 'sportShowsCurrentLevelImage',
-                I3: 'sportConfirmsDeletion', I4: 'sportShowsLevelProgress',
-                B1: 'blogShowsActiveTasks', B2: 'blogDeletesWithoutXp',
-                B3: 'blogShowsHint', B4: 'blogShowsFullPlan'
+                '1': 'task1RemembersEnteredNameForEveryPet',
+                '2': 'task2RenamesEveryPetAndKeepsMenuBelowCurrentAction',
+                '3': 'task3ConfirmsDeletionForEveryPet',
+                '4': 'task4ShowsEveryPetAndKeepsButtonInCommonMenu'
         ]
-        String code = providers.gradleProperty('task').getOrElse('').toUpperCase()
+        String code = providers.gradleProperty('task').getOrElse('').trim()
         if (!testsByCode.containsKey(code)) {
-            throw new GradleException('Введите код задания: S1–S4, I1–I4 или B1–B4.')
+            throw new GradleException('Введите номер задания: 1, 2, 3 или 4.')
         }
 
         String wrapper = System.getProperty('os.name').toLowerCase().contains('windows')
@@ -188,7 +186,7 @@ tasks.register('checkTask') {
         if (exitCode == 0) {
             println "✅ Задание ${code} выполнено"
         } else {
-            throw new GradleException("Пока не получилось выполнить ${code}. Проверьте подсказку в карточке GitHub и последние изменения.")
+            throw new GradleException("Пока не получилось выполнить задание ${code}. Вернитесь к его шагам в методичке и проверьте последние изменения.")
         }
     }
 }

@@ -3,7 +3,7 @@
 ## Для проведения урока
 
 - [Единая методичка менеджера](https://www.notion.so/3e16ba2ce4e8801a9c67c1830814439b) — сценарий на 60 минут, теория в нужный момент, ответы, словарь и помощь при проблемах.
-- [GitHub Issues](https://github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues) — единственный источник заданий студента.
+- [GitHub Issues](https://github.com/Pixel-Point-Studio/trial-lesson-magic-pet/issues) — дополнительный пример командных задач; полный путь выполнения уже встроен в методичку.
 - [README.md](README.md) — короткий вход в продукт и запуск.
 
 ## Для владельца продукта

@@ -11,14 +11,14 @@ import studio.pixelpoint.magicpet.lesson.route.LessonRouteRegistry;
 /**
  * Общий диспетчер сообщений Telegram.
  *
- * <p>Он получает сообщение и передаёт его выбранному направлению из {@code lesson/route}.
- * На обычном занятии этот файл достаточно прочитать как карту; менять его не нужно,
- * если карточка GitHub прямо этого не просит.</p>
+ * <p>Он получает сообщение, определяет этап диалога и вызывает готовое действие.
+ * Студент меняет только {@link PetFeatures}; этот файл можно читать как карту.</p>
  */
 public final class StudentBot {
     private final PetFacade pet;
     private final boolean resetEnabled;
     private final LessonRouteRegistry routes = new LessonRouteRegistry();
+    private final PetFeatures features = new PetFeatures();
 
     public StudentBot(PetFacade pet) { this(pet, false); }
 
@@ -45,31 +45,25 @@ public final class StudentBot {
         }
         LessonRoute route = routes.forScenario(user.scenario());
         if (route != null && user.state() == UserState.WAITING_PET_NAME && message.hasText()) {
-            route.acceptPetName(pet, user, message.text());
+            features.savePetName(pet, user, message.text());
             return;
         }
-        if (route != null && route.handleText(pet, user, message)) return;
-        if (route != null && route.handleButton(pet, user, message)) return;
-
-        Long taskId = callbackId(message.buttonId(), "task:confirm_delete:");
-        if (taskId != null) {
-            if (journeyReady(user)) pet.confirmTaskDeletion(user, taskId); else repeat(user);
-            return;
-        }
+        if (features.handleText(pet, user, message)) return;
+        if (features.handleButton(pet, user, message)) return;
 
         if (message.buttonPressed("action:task_done") && route != null) {
             if (user.state() == UserState.ACTIVE) {
                 ProgressResult result = pet.completeCurrentTask(user, message.deliveryId());
-                route.afterTaskCompleted(pet, user, result);
+                afterTaskCompleted(user, result);
             } else repeat(user);
             return;
         }
         if (message.buttonPressed("action:my_tasks")) {
-            if (journeyReady(user)) pet.showTasks(user, false); else repeat(user);
+            if (journeyReady(user)) pet.showTasks(user, false, features.menuButtons()); else repeat(user);
             return;
         }
         if (message.buttonPressed("action:completed_tasks")) {
-            if (journeyReady(user)) pet.showTasks(user, true); else repeat(user);
+            if (journeyReady(user)) pet.showTasks(user, true, features.menuButtons()); else repeat(user);
             return;
         }
         if (message.buttonPressed("action:add_task")) {
@@ -77,24 +71,24 @@ public final class StudentBot {
             return;
         }
 
-        taskId = callbackId(message.buttonId(), "task:open:");
+        Long taskId = callbackId(message.buttonId(), "task:open:");
         if (taskId != null) {
-            if (journeyReady(user)) pet.showTask(user, taskId); else repeat(user);
+            if (journeyReady(user)) pet.showTask(user, taskId, features.menuButtons()); else repeat(user);
             return;
         }
         taskId = callbackId(message.buttonId(), "task:done:");
         if (taskId != null) {
-            if (journeyReady(user)) pet.completeTask(user, taskId, message.deliveryId()); else repeat(user);
+            if (journeyReady(user)) pet.completeTask(user, taskId, message.deliveryId(), features.menuButtons()); else repeat(user);
             return;
         }
         taskId = callbackId(message.buttonId(), "task:delete:");
         if (taskId != null) {
-            if (journeyReady(user)) pet.deleteTask(user, taskId); else repeat(user);
+            if (journeyReady(user)) pet.deleteTask(user, taskId, features.menuButtons()); else repeat(user);
             return;
         }
 
         if (message.hasText() && user.state() == UserState.WAITING_GOAL) {
-            pet.createPlan(user, message.text(), route.displayedPetScenario());
+            pet.createPlan(user, message.text(), features.menuButtons());
             return;
         }
         if (message.hasText() && user.state() == UserState.WAITING_TASK_TITLE) {
@@ -102,16 +96,24 @@ public final class StudentBot {
             return;
         }
         if (message.hasText() && user.state() == UserState.WAITING_TASK_DESCRIPTION) {
-            pet.acceptTaskDescription(user, message.text());
+            pet.acceptTaskDescription(user, message.text(), features.menuButtons());
             return;
         }
         repeat(user);
     }
 
     private void repeat(UserSession user) {
-        LessonRoute route = routes.forScenario(user.scenario());
-        if (route != null && user.state() == UserState.ACTIVE) pet.showCurrentTask(user, route.taskButtons());
-        else pet.repeatPrompt(user);
+        pet.repeatPrompt(user, features.menuButtons());
+    }
+
+    private void afterTaskCompleted(UserSession user, ProgressResult result) {
+        UserSession refreshed = pet.refreshUser(user);
+        pet.showProgress(refreshed, result);
+        if (result.levelUp()) {
+            pet.showLevelUp(refreshed, result);
+            pet.showPet(refreshed, result.level());
+        }
+        pet.continueAfterCompletion(refreshed, result, features.menuButtons());
     }
 
     public static Long callbackId(String buttonId, String prefix) {
