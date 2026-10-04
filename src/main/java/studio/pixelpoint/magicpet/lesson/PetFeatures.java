@@ -10,33 +10,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Единственный файл, который студент меняет на пробном уроке.
+ * Главный файл для работы со сценарием бота
  *
- * <p>Все сложные части Telegram, базы данных и AI уже спрятаны в {@link PetFacade}.
- * Здесь мы только связываем понятное действие пользователя с готовым действием продукта.</p>
+ * Интеграция с Telegram, базой данных и AI (ChatGPT) реализованы в
+ * {@link PetFacade}.
+ * Здесь мы связываем действие пользователя с реакцией продукта.
  */
 public final class PetFeatures {
 
-    /** Получает введённое пользователем имя и просит готовую часть продукта сохранить его. */
+    /**
+     * Метод получает введённое пользователем имя, записывает его в
+     * переменную-параметр enteredName
+     * вызывает метод сохранения нового имени namePet().
+     */
     public void savePetName(PetFacade pet, UserSession user, String enteredName) {
-        // TODO STUDENT 1: передай в namePet имя из переменной enteredName вместо готового текста.
+        // TODO 1 - нужно использовать введённое пользователем имя, а не "Magic Pet"
         pet.namePet(user, "Magic Pet");
     }
 
     /**
-     * Собирает общие кнопки меню. Они показываются под кнопками текущего действия.
-     *
-     * <p>У Button два текста: слева скрытое имя действия для программы,
-     * справа подпись, которую человек увидит в Telegram.</p>
+     * Метод собирает кнопки меню. Они показываются под кнопками текущего действия.
+     * Для добавления новых кнопок нужно создать новый объект Button и добавить его
+     * в список buttons.
      */
     public List<Button> menuButtons() {
         List<Button> buttons = new ArrayList<>();
 
-        // TODO STUDENT 2: убери // у следующей строки, чтобы добавить кнопку переименования.
-        // buttons.add(new Button("action:rename_pet", "✏️ Переименовать Pet"));
+        // TODO 2.1 нужно добавить новую кнопку для переименования питомца со скрытым
+        // идентификатором "action:rename_pet"
 
-        // TODO STUDENT 4 (дополнительно): убери //, чтобы добавить кнопку показа Pet.
-        // buttons.add(new Button("action:show_pet", "🐾 Показать моего Pet"));
+        // TODO 4.1 нужно добавить новую кнопку для показа питомца со скрытым
+        // идентификатором "action:show_pet"
 
         return buttons;
     }
@@ -44,37 +48,36 @@ public final class PetFeatures {
     /** Реагирует на нажатие кнопки по её скрытому имени действия. */
     public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
         if (message.buttonPressed("action:rename_pet")) {
-            // ЗАДАНИЕ 2, часть 2: убери // — программа попросит пользователя написать новое имя.
-            // pet.beginPetRename(user);
-            return true; // true означает: «эту кнопку узнали, дальше её искать не нужно».
+            // TODO 2.2 нужно попросить пользователя ввести новое имя питомца
+
+            return true; // означает: «эту кнопку узнали и обработали, дальше её искать не нужно».
         }
 
-        if (message.buttonPressed("action:show_pet")) {
-            // ЗАДАНИЕ 4, часть 2: убери // — готовый метод покажет Pet, уровень и XP.
-            // pet.showPet(user);
-            return true;
-        }
+        // TODO 4.2 нужно показать информацию о питомце пользователя - имя, уровень и
+        // XP, при условии, что пользователь нажал кнопку "action:show_pet"
 
         // В скрытом имени кнопки удаления находится номер выбранной задачи.
         Long taskId = StudentBot.callbackId(message.buttonId(), "task:confirm_delete:");
         if (taskId != null) {
-            // TODO STUDENT 3: вместо немедленного удаления вызови confirmTaskDeletion.
+            // TODO 3 нужно использовать удаление задачи с подтверждением вместо прямого
+            // удаления.
             pet.deleteTask(user, taskId, menuButtons());
             return true;
         }
 
-        return false; // false означает: «это не наша кнопка, пусть программа проверит остальные».
+        return false; // false означает: «эту кнопку в этом методе мы не обрабатываем».
     }
 
     /**
-     * Принимает обычный текст, если перед этим пользователь нажал «Переименовать Pet».
+     * Принимает обычный текст, если перед этим пользователь нажал «Переименовать
+     * питомца.
      * user.state() — текущий шаг разговора, а WAITING_PET_RENAME означает
      * «бот ждёт, что следующим сообщением человек пришлёт новое имя».
      */
     public boolean handleText(PetFacade pet, UserSession user, IncomingMessage message) {
-        if (user.state() == UserState.WAITING_PET_RENAME && message.hasText()) {
-            // ЗАДАНИЕ 2, часть 3: убери // — текст сообщения станет новым именем.
-            // pet.renamePet(user, message.text());
+        if (user.state() == UserState.WAITING_PET_RENAME) {
+            // TODO 2.3 нужно вызвать метод переименования питомца с введённым пользователем
+            // именем
             return true;
         }
         return false;
