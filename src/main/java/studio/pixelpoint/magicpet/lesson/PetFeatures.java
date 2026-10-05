@@ -35,28 +35,27 @@ public final class PetFeatures {
      */
     public List<Button> menuButtons() {
         List<Button> buttons = new ArrayList<>();
-
-        // TODO 4.1 нужно добавить новую кнопку для переименования питомца со скрытым
-        // идентификатором "action:rename_pet"
-
-        // TODO 3.1 нужно добавить новую кнопку для показа питомца со скрытым
+        // TODO 3.1 нужно добавить новую кнопку для показа питомца с
         // идентификатором "action:show_pet"
+
+        // TODO 4.1 нужно добавить новую кнопку для переименования питомца с
+        // идентификатором "action:rename_pet"
 
         return buttons;
     }
 
-    /** Реагирует на нажатие кнопки по её скрытому имени действия. */
+    /** Реагирует на нажатие кнопки по её id действия. */
     public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
-        if (message.buttonPressed("action:rename_pet")) {
-            // TODO 4.2 нужно попросить пользователя ввести новое имя питомца
+        if (message.buttonPressed("action:show_pet")) {
+            // TODO 3.2 нужно показать информацию о питомце пользователя
 
             return true; // означает: «эту кнопку узнали и обработали, дальше её искать не нужно».
         }
 
-        // TODO 3.2 нужно показать информацию о питомце пользователя - имя, уровень и
-        // XP, при условии, что пользователь нажал кнопку "action:show_pet"
+        // TODO 4.2 нужно попросить пользователя ввести новое имя питомца если была
+        // нажата кнопка с id action:rename_pet
 
-        // В скрытом имени кнопки удаления находится номер выбранной задачи.
+        // В идентификаторе кнопки удаления находится номер выбранной задачи.
         Long taskId = StudentBot.callbackId(message.buttonId(), "task:confirm_delete:");
         if (taskId != null) {
             // TODO 2 нужно использовать удаление задачи с подтверждением вместо прямого
