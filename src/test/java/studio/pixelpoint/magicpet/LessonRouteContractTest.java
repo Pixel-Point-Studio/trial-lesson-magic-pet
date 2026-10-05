@@ -40,7 +40,7 @@ class LessonRouteContractTest {
     }
 
     @Test
-    void task2RenamesEveryPetAndKeepsMenuBelowCurrentAction() {
+    void task4RenamesEveryPetAndKeepsMenuBelowCurrentAction() {
         int index = 0;
         for (String route : List.of("study", "sport", "blog")) {
             long userId = 200 + index;
@@ -60,7 +60,7 @@ class LessonRouteContractTest {
     }
 
     @Test
-    void task3ConfirmsDeletionForEveryPet() {
+    void task2ConfirmsDeletionForEveryPet() {
         int index = 0;
         for (String route : List.of("study", "sport", "blog")) {
             long userId = 300 + index;
@@ -85,7 +85,7 @@ class LessonRouteContractTest {
     }
 
     @Test
-    void task4ShowsEveryPetAndKeepsButtonInCommonMenu() {
+    void task3ShowsEveryPetAndKeepsButtonInCommonMenu() {
         int index = 0;
         for (String route : List.of("study", "sport", "blog")) {
             long userId = 400 + index;

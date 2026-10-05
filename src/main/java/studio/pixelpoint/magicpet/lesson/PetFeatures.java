@@ -36,10 +36,10 @@ public final class PetFeatures {
     public List<Button> menuButtons() {
         List<Button> buttons = new ArrayList<>();
 
-        // TODO 2.1 нужно добавить новую кнопку для переименования питомца со скрытым
+        // TODO 4.1 нужно добавить новую кнопку для переименования питомца со скрытым
         // идентификатором "action:rename_pet"
 
-        // TODO 4.1 нужно добавить новую кнопку для показа питомца со скрытым
+        // TODO 3.1 нужно добавить новую кнопку для показа питомца со скрытым
         // идентификатором "action:show_pet"
 
         return buttons;
@@ -48,18 +48,18 @@ public final class PetFeatures {
     /** Реагирует на нажатие кнопки по её скрытому имени действия. */
     public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
         if (message.buttonPressed("action:rename_pet")) {
-            // TODO 2.2 нужно попросить пользователя ввести новое имя питомца
+            // TODO 4.2 нужно попросить пользователя ввести новое имя питомца
 
             return true; // означает: «эту кнопку узнали и обработали, дальше её искать не нужно».
         }
 
-        // TODO 4.2 нужно показать информацию о питомце пользователя - имя, уровень и
+        // TODO 3.2 нужно показать информацию о питомце пользователя - имя, уровень и
         // XP, при условии, что пользователь нажал кнопку "action:show_pet"
 
         // В скрытом имени кнопки удаления находится номер выбранной задачи.
         Long taskId = StudentBot.callbackId(message.buttonId(), "task:confirm_delete:");
         if (taskId != null) {
-            // TODO 3 нужно использовать удаление задачи с подтверждением вместо прямого
+            // TODO 2 нужно использовать удаление задачи с подтверждением вместо прямого
             // удаления.
             pet.deleteTask(user, taskId, menuButtons());
             return true;
@@ -76,7 +76,7 @@ public final class PetFeatures {
      */
     public boolean handleText(PetFacade pet, UserSession user, IncomingMessage message) {
         if (user.state() == UserState.WAITING_PET_RENAME) {
-            // TODO 2.3 нужно вызвать метод переименования питомца с введённым пользователем
+            // TODO 4.3 нужно вызвать метод переименования питомца с введённым пользователем
             // именем
             return true;
         }
