@@ -7,7 +7,7 @@
       "request": "launch",
       "mainClass": "studio.pixelpoint.magicpet.MagicPetApplication",
       "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
+      "console": "internalConsole",
       "vmArgs": "--enable-native-access=ALL-UNNAMED"
     }
   ]

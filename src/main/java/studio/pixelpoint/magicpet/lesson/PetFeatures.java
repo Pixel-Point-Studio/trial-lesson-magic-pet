@@ -43,10 +43,13 @@ public final class PetFeatures {
         buttons.add(new Button("action:rename_pet", "✏️ Переименовать Pet"));
         buttons.add(new Button("action:show_pet", "🐾 Показать моего Pet"));
 
+        // TODO 4.1 нужно добавить новую кнопку для переименования питомца с
+        // идентификатором "action:rename_pet"
+
         return buttons;
     }
 
-    /** Реагирует на нажатие кнопки по её скрытому имени действия. */
+    /** Реагирует на нажатие кнопки по её id действия. */
     public boolean handleButton(PetFacade pet, UserSession user, IncomingMessage message) {
         if (message.buttonPressed("action:rename_pet")) {
             pet.beginPetRename(user);
@@ -58,7 +61,7 @@ public final class PetFeatures {
             return true;
         }
 
-        // В скрытом имени кнопки удаления находится номер выбранной задачи.
+        // В идентификаторе кнопки удаления находится номер выбранной задачи.
         Long taskId = StudentBot.callbackId(message.buttonId(), "task:confirm_delete:");
         if (taskId != null) {
             pet.confirmTaskDeletion(user, taskId, menuButtons());

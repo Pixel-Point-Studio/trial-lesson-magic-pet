@@ -164,9 +164,9 @@ tasks.register('checkTask') {
     doLast {
         Map<String, String> testsByCode = [
                 '1': 'task1RemembersEnteredNameForEveryPet',
-                '2': 'task2RenamesEveryPetAndKeepsMenuBelowCurrentAction',
-                '3': 'task3ConfirmsDeletionForEveryPet',
-                '4': 'task4ShowsEveryPetAndKeepsButtonInCommonMenu'
+                '2': 'task2ConfirmsDeletionForEveryPet',
+                '3': 'task3ShowsEveryPetAndKeepsButtonInCommonMenu',
+                '4': 'task4RenamesEveryPetAndKeepsMenuBelowCurrentAction'
         ]
         String code = providers.gradleProperty('task').getOrElse('').trim()
         if (!testsByCode.containsKey(code)) {

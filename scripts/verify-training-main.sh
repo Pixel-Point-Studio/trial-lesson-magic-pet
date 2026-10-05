@@ -15,9 +15,9 @@ todo_count="$(grep -R 'TODO STUDENT' src/main/java | wc -l | tr -d ' ')"
 
 tests=(
   task1RemembersEnteredNameForEveryPet
-  task2RenamesEveryPetAndKeepsMenuBelowCurrentAction
-  task3ConfirmsDeletionForEveryPet
-  task4ShowsEveryPetAndKeepsButtonInCommonMenu
+  task2ConfirmsDeletionForEveryPet
+  task3ShowsEveryPetAndKeepsButtonInCommonMenu
+  task4RenamesEveryPetAndKeepsMenuBelowCurrentAction
 )
 
 for test_name in "${tests[@]}"; do
