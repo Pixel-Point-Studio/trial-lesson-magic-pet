@@ -80,9 +80,7 @@ Magic Pet — Telegram-бот с искусственным интеллекто
 - `pet.showPet(user);` - метод, который показывает информацию о питомце;
 - `pet.renamePet(user, message.text());` - метод, для переименование питомца
 
-Общие кнопки меню показываются **после** кнопок текущего действия. Например, на карточке задания сначала находится «Выполнено», а ниже — «Переименовать питомца, «Показать моего питомца и остальные пункты меню.
-
-## Посмотреть изменения перед отправкой кода
+## Посмотреть изменения
 
 Открой слева **Source Control / Контроль версий** (иконка ветки с 3 точками). Нажми на `PetFeatures.java`: добавленные строки будут зелёными, удалённые — красными.
 
@@ -94,7 +92,7 @@ Magic Pet — Telegram-бот с искусственным интеллекто
 | Папка с тестами продукта | src/test |
 | Функции сценария работы бота | [`PetFeatures.java`](src/main/java/studio/pixelpoint/magicpet/lesson/PetFeatures.java) |
 | Обработка всех сообщений Telegram | [`StudentBot.java`](src/main/java/studio/pixelpoint/magicpet/lesson/StudentBot.java) |
-| Готовые действия `showPet`, `renamePet` и другие | [`PetFacade.java`](src/main/java/studio/pixelpoint/magicpet/application/PetFacade.java) |
+| Готовые методы `showPet`, `renamePet` и другие | [`PetFacade.java`](src/main/java/studio/pixelpoint/magicpet/application/PetFacade.java) |
 | Подписи обычных кнопок и сообщения | [`ui-texts.ru.json`](src/main/resources/content/ui-texts.ru.json) |
 | Инструкция для AI, который составляет план | [`plan-generator.ru.json`](src/main/resources/prompts/plan-generator.ru.json) |
 | Изображения питомца трёх уровней | [`assets`](assets) |
